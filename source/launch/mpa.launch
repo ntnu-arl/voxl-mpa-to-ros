@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<!--
+/****************************************************************************
+ * Copyright 2020 Modal AI
+ * Complete TOF launch file exposes all node params as arguments
+ ****************************************************************************/
+-->
+
+
+<launch>
+
+
+    <arg name="namespace" default="mpa" />
+
+    <!-- start tof_cam node with all arguments -->
+    <group ns="$(arg namespace)">
+        <node name="voxl_mpa_to_ros_node" type="voxl_mpa_to_ros_node" pkg="voxl_mpa_to_ros" output="screen">
+            
+        </node>
+    </group>
+
+</launch>
+
