@@ -61,7 +61,7 @@ void CameraInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s", m_pipeName);
+    sprintf(topicName, "/%s/image_raw", m_pipeName);
     m_rosImagePublisher = it.advertise(topicName, 1);
 
     m_state = ST_AD;

@@ -116,12 +116,12 @@ int MainEnter(int argc, char **argv, ros::NodeHandle nh){
                 numInterfaces++;
 
             } else {
-                printf("Param: %s specified invalid or missing pipe \"%s\", not publishing associated interface\n", pInt.pipeArg.c_str(), pipeName.c_str());
+                printf("Param: \"%s\" specified invalid or missing pipe: \"%s\", not publishing associated interface\n", pInt.pipeArg.c_str(), pipeName.c_str());
             }
 
 
         } else {
-            printf("Param: %s set to false, not publishing associated interface\n", pInt.publishArg.c_str());
+            printf("Param: \"%s\" set to false, not publishing associated interface\n", pInt.publishArg.c_str());
         }
 
     }
