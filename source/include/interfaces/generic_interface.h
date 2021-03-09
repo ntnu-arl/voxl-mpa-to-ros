@@ -48,6 +48,15 @@ enum InterfaceState {
     ST_CLEAN
 };
 
+/**
+ * This class describes the functionality for a generic mpa interface, all interfaces
+ * should follow this structure, see camera_interface for a basic example
+ * 
+ * All children should call the 4-parameter constructor of this class
+ * 
+ * rosNodeHandle and basechannel should be supplied by main, numchannels should 
+ * be supplied by the child class, and pipename should be supplied by main via a rosparam
+ */
 class GenericInterface
 {
 
@@ -55,7 +64,7 @@ public:
 
     GenericInterface(ros::NodeHandle  rosNodeHandle,
                      int              baseChannel,
-                     const int        numChannels,
+                     const int        numChannels,    //Numer of MPA channels this interface requires
                      const char *     pipeName):
     m_rosNodeHandle(rosNodeHandle),
     m_baseChannel(baseChannel),
@@ -65,7 +74,7 @@ public:
         m_state = ST_READY;
     }
 
-    ~GenericInterface(){};
+    virtual ~GenericInterface(){};
 
 
     /**
@@ -118,6 +127,10 @@ public:
 
     const int GetNumRequiredChannels(){
         return m_numRequiredChannels;
+    }
+
+    char *GetPipeName(){
+        return (char *)m_pipeName;
     }
 
 protected:

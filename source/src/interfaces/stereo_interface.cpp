@@ -44,7 +44,7 @@ StereoInterface::StereoInterface(
     ros::NodeHandle rosNodeHandle,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_CAM_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, baseChannel, NUM_STEREO_REQUIRED_CHANNELS, camName)
 {
 
     char frameName[64];
@@ -111,7 +111,7 @@ void StereoInterface::CleanAndExit(){
 }
 
 int StereoInterface::GetNumClients(){
-    return m_rosImagePublisherL.getNumSubscribers() + m_rosImagePublisherL.getNumSubscribers();
+    return m_rosImagePublisherL.getNumSubscribers() + m_rosImagePublisherR.getNumSubscribers();
 }
 
 // IR helper callback whenever a frame arrives

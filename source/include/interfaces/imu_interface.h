@@ -31,27 +31,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef STEREO_MPA_INTERFACE
-#define STEREO_MPA_INTERFACE
+#ifndef IMU_MPA_INTERFACE
+#define IMU_MPA_INTERFACE
 
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/Image.h>
-#include <image_transport/image_transport.h>
-#include <image_transport/publisher.h>
+#include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
 
 #include "generic_interface.h"
 
-//Number of required MPA channels
-#define NUM_STEREO_REQUIRED_CHANNELS 1
+#define NUM_IMU_REQUIRED_CHANNELS 1
 
-class StereoInterface: public GenericInterface
+class IMUInterface: public GenericInterface
 {
 public:
-    StereoInterface(ros::NodeHandle rosNodeHandle,
-                    int             baseChannel,
-                    const char*     camName);
+    IMUInterface(ros::NodeHandle rosNodeHandle,
+                 int             baseChannel,
+                 const char*     name);
 
-    ~StereoInterface() { };
+    ~IMUInterface() { };
 
     int  GetNumClients();
     void AdvertiseTopics();
@@ -59,27 +56,18 @@ public:
     void StopPublishing();
     void CleanAndExit();
 
-    sensor_msgs::Image* GetImageMsgL(){
-        return m_imageMsgL;
-    }
-    sensor_msgs::Image* GetImageMsgR(){
-        return m_imageMsgR;
+    sensor_msgs::Imu* GetImuMsg(){
+        return m_imuMsg;
     }
 
-    image_transport::Publisher GetPublisherL(){
-        return m_rosImagePublisherL;
-    }
-    image_transport::Publisher GetPublisherR(){
-        return m_rosImagePublisherR;
+    ros::Publisher GetPublisher(){
+        return m_rosPublisher;
     }
 
 private:
 
-    sensor_msgs::Image*                    m_imageMsgL;                   ///< Image message
-    image_transport::Publisher             m_rosImagePublisherL;          ///< Image publisher
-
-    sensor_msgs::Image*                    m_imageMsgR;                   ///< Image message
-    image_transport::Publisher             m_rosImagePublisherR;          ///< Image publisher
+    sensor_msgs::Imu*              m_imuMsg;                   ///< Image message
+    ros::Publisher                 m_rosPublisher;          ///< Image publisher
 
 };
 #endif

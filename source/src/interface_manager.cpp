@@ -92,7 +92,7 @@ static void* ThreadManageInterfaces(void *pData){
         GenericInterface *interface = manager->GetInterface(i);
 
         if(interface->GetState() == ST_READY){
-            printf("Interface %d now advertising\n", i);
+            printf("Interface %s now advertising\n", interface->GetPipeName());
             interface->AdvertiseTopics();
         }
 
@@ -105,13 +105,13 @@ static void* ThreadManageInterfaces(void *pData){
             GenericInterface *interface = manager->GetInterface(i);
 
             if(interface->GetState() == ST_RUNNING && interface->GetNumClients() == 0){
-                printf("Interface %d ceasing to publish\n", i);
+                printf("Interface %s ceasing to publish\n", interface->GetPipeName());
                 interface->StopPublishing();
                 continue;
             }
 
             if(interface->GetState() == ST_AD && interface->GetNumClients() > 0){
-                printf("Interface %d now publishing\n", i);
+                printf("Interface %s now publishing\n", interface->GetPipeName());
                 interface->StartPublishing();
                 continue;
             }

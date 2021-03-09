@@ -4,7 +4,7 @@
 ################################################################################
 
 # list all your dependencies here
-DEPS="libmodal_pipe"
+DEPS="libmodal_pipe libmodal_json"
 
 # variables
 OPKG_CONF=/etc/opkg/opkg.conf

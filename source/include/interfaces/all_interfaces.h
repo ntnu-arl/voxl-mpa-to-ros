@@ -38,5 +38,13 @@
 #include "camera_interface.h"
 #include "stereo_interface.h"
 //#include "tof_interface.h"
+#include "imu_interface.h"
+
+enum InterfaceType {
+    INT_CAMERA,
+    INT_STEREO,
+    //INT_TOF,
+    INT_IMU
+};
 
 #endif

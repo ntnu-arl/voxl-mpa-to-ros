@@ -89,6 +89,7 @@ target_link_libraries(${PROJECT_NAME}_node
    utils
    log
    modal_pipe
+   modal_json
 )
 
 

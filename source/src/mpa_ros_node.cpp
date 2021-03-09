@@ -32,49 +32,133 @@
  ******************************************************************************/
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <getopt.h>
 #include <signal.h>
 #include <ros/ros.h>
+#include <modal_pipe.h>
 #include "all_interfaces.h"
 #include "interface_manager.h"
 
-InterfaceManager *manager = NULL;
-GenericInterface *interfaces[3];
+//Any additional potential interfaces should be added here, see 
+//potentialInterface struct for reference
+#define NUM_POTENTIAL_INTERFACES 4
+#define POTENTIAL_INTERFACES {\
+    {"tracking_pipe", "tracking_publish", INT_CAMERA}, \
+    {"stereo_pipe",   "stereo_publish",   INT_STEREO}, \
+    {"imu0_pipe",     "imu0_publish",     INT_IMU},    \
+    {"imu1_pipe",     "imu1_publish",     INT_IMU}     \
+    }
 
-void MainEnter(int argc, char **argv, ros::NodeHandle rosNodeHandle){
+    //{"tof_pipe",      "tof_publish",      INT_TOF},     
+
+
+InterfaceManager *manager = NULL;
+GenericInterface *interfaces[NUM_POTENTIAL_INTERFACES];
+int              numInterfaces = 0;
+
+typedef struct PotentialInterface{
+
+    const std::string pipeArg;     //string rosparam to look for what pipe
+    const std::string publishArg;  //boolean rosparam to look for whether to publish
+    const InterfaceType type;
+
+}PotentialInterface;
+
+bool pipeExists(const char *pipeName){
+
+    char fullPath[MODAL_PIPE_MAX_PATH_LEN];
+    pipe_client_construct_full_path((char *)pipeName, fullPath);
+    strcat(fullPath, "request");
+
+    return access(fullPath, F_OK) == 0;
+
+}
+
+int MainEnter(int argc, char **argv, ros::NodeHandle nh){
 
     int channel = 0;
+    PotentialInterface potentials[NUM_POTENTIAL_INTERFACES] = POTENTIAL_INTERFACES;
 
-    interfaces[0] = new CameraInterface(rosNodeHandle,0, "tracking");
-    interfaces[1] = new StereoInterface(rosNodeHandle,1, "stereo");
-    //interfaces[2] = new CameraInterface(rosNodeHandle,1, "hires_preview");
+    for(int i = 0; i < NUM_POTENTIAL_INTERFACES; i++){
 
-    manager = new InterfaceManager(interfaces, 2);
+        PotentialInterface pInt = potentials[i];
+
+        bool pub;
+        nh.param<bool>(pInt.publishArg, pub, false);
+        if(pub){
+
+            std::string pipeName;
+            nh.getParam(pInt.pipeArg, pipeName);
+
+            if(pipeExists(pipeName.c_str())){
+
+                switch (pInt.type){
+                    case INT_CAMERA:
+                        interfaces[numInterfaces] = new CameraInterface(nh, channel, pipeName.c_str());
+                        break;
+                    case INT_STEREO:
+                        interfaces[numInterfaces] = new StereoInterface(nh, channel, pipeName.c_str());
+                        break;
+                    /*case INT_TOF:
+                        interfaces[numInterfaces] = new TofInterface(nh, channel, pipeName.c_str());
+                        break;*/
+                    case INT_IMU:
+                        interfaces[numInterfaces] = new IMUInterface(nh, channel, pipeName.c_str());
+                        break;
+                    default:
+                        printf("Invalid interface type specified for pipe: %s, exiting\n", pipeName.c_str());
+                        return -1;
+                }
+
+                channel += interfaces[numInterfaces]->GetNumRequiredChannels();
+                numInterfaces++;
+
+            } else {
+                printf("Param: %s specified invalid or missing pipe \"%s\", not publishing associated interface\n", pInt.pipeArg.c_str(), pipeName.c_str());
+            }
+
+
+        } else {
+            printf("Param: %s set to false, not publishing associated interface\n", pInt.publishArg.c_str());
+        }
+
+    }
+
+    if(numInterfaces == 0){
+        printf("No combinations of requested pipes and existing pipes found, rosnode exiting\n");
+        return -1;
+    }
+
+    manager = new InterfaceManager(interfaces, numInterfaces);
 
     manager->Start();
+
+    return 0;
 
 }
 
 void MainExit(){
 
-    manager->Stop();
+    if(manager != NULL){
+        manager->Stop();
 
-    usleep(1000000);
+        delete manager;
+    }
 
-    delete manager;
-
-    delete &interfaces[0];
-    delete &interfaces[1];
-    //delete &interfaces[2];
-
+    for(int i = 0; i < numInterfaces; i++)
+        delete interfaces[i];
 }
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "voxl_mpa_to_ros_node");
     ros::NodeHandle rosNodeHandle("~");
-    MainEnter(argc, argv, rosNodeHandle);
+    if(MainEnter(argc, argv, rosNodeHandle)){
+        MainExit();
+        return -1;
+    }
 
     printf("\n\nMPA to ROS app is now running\n\n");
     fflush(stdout);

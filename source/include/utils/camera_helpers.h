@@ -33,4 +33,5 @@
 
 
 int GetStepSize(int format);
+
 const std::string GetRosFormat(int format);

@@ -2,20 +2,50 @@
 
 <!--
 /****************************************************************************
- * Copyright 2020 Modal AI
- * Complete TOF launch file exposes all node params as arguments
+ * Copyright 2021 Modal AI
+ * Complete MPA launch file exposes all node params as arguments
  ****************************************************************************/
 -->
 
 
 <launch>
 
+    <!-- sample interface variables, specify whether to publish, and the pipe to look for -->
+    <arg name="tracking_publish" default="true"    />
+    <arg name="tracking_pipe"    default="tracking"/>
 
+    <arg name="stereo_publish"   default="true"    />
+    <arg name="stereo_pipe"      default="stereo"  />
+
+    <arg name="imu0_publish"     default="true"    />
+    <arg name="imu0_pipe"        default="imu0"    />
+
+    <arg name="imu1_publish"     default="true"    />
+    <arg name="imu1_pipe"        default="imu1"    />
+
+    <!-- Tof is not currently supported, look for it in a future release
+    <arg name="tof_publish"      default="false"    />
+    <arg name="tof_pipe"         default="tof_pc"  />
+    -->
     <arg name="namespace" default="mpa" />
-
-    <!-- start tof_cam node with all arguments -->
+    <!-- start mpa node with all arguments -->
     <group ns="$(arg namespace)">
         <node name="voxl_mpa_to_ros_node" type="voxl_mpa_to_ros_node" pkg="voxl_mpa_to_ros" output="screen">
+            <param name="tracking_publish" value="$(arg tracking_publish)" />
+            <param name="tracking_pipe"    value="$(arg tracking_pipe)"    />
+
+            <param name="stereo_publish"   value="$(arg stereo_publish)"   />
+            <param name="stereo_pipe"      value="$(arg stereo_pipe)"      />
+<!--
+            <param name="tof_publish"      value="$(arg tof_publish)"      />
+            <param name="tof_pipe"         value="$(arg tof_pipe)"         />
+-->
+            <param name="imu0_publish"     value="$(arg imu0_publish)"     />
+            <param name="imu0_pipe"        value="$(arg imu0_pipe)"        />
+
+            <param name="imu1_publish"     value="$(arg imu1_publish)"     />
+            <param name="imu1_pipe"        value="$(arg imu1_pipe)"        />
+
             
         </node>
     </group>
