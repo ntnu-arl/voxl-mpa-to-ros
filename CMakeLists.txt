@@ -23,7 +23,7 @@
 # * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 # * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
 # * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OFe
+# * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 # * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 # * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 # * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
@@ -31,11 +31,75 @@
 # * POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-#!/bin/bash
-SRC_PATH=`pwd`/source
+cmake_minimum_required(VERSION 2.8.3)
+project(voxl_mpa_to_ros)
 
-if [[ $# -eq 1 ]]; then
-	SRC_PATH=$1
-fi
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-catkin_make -DCMAKE_BUILD_TYPE=Release -Wno-dev install --source ${SRC_PATH}
+cmake_policy(SET CMP0054 OLD)
+cmake_policy(SET CMP0045 OLD)
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  camera_info_manager
+  dynamic_reconfigure
+  image_transport
+  nodelet
+  sensor_msgs
+  tf2
+  tf2_ros
+  )
+
+catkin_package(
+  CATKIN_DEPENDS
+    roscpp
+    camera_info_manager
+    dynamic_reconfigure
+    image_transport
+    sensor_msgs
+  )
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ./include
+  ./include/interfaces
+  ./include/utils
+)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -pthread -Wall -L${CMAKE_CURRENT_SOURCE_DIR}/lib/tof -L/${CMAKE_CURRENT_SOURCE_DIR}/lib/pmd")
+
+file(GLOB interfaces CONFIGURE_DEPENDS "src/interfaces/*_interface.cpp")
+file(GLOB utils CONFIGURE_DEPENDS "src/utils/*.cpp")
+
+add_executable(${PROJECT_NAME}_node
+    src/mpa_ros_node.cpp
+    src/interface_manager.cpp
+    ${interfaces}
+    ${utils}
+)
+
+add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencfg)
+
+target_link_libraries(${PROJECT_NAME}_node
+   ${catkin_LIBRARIES}
+   cutils
+   utils
+   log
+   modal_pipe
+   modal_json
+)
+
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+# Mark executables and/or libraries for installation
+install(TARGETS
+  ${PROJECT_NAME}_node
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
+

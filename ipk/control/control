@@ -1,8 +1,0 @@
-Package: voxl-mpa-to-ros
-Version: 0.0.2
-Section: base
-Priority: optional
-Architecture: aarch64
-Depends:
-Maintainer: Alex Gardner <alex.gardner@modalai.com>
-Description: MPA to Ros node

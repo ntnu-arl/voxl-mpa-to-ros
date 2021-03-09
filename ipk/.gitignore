@@ -1,7 +1,0 @@
-control.tar.gz
-data.tar.gz
-data/
-.catkin_workspace
-.bash_history
-build/*
-devel/*
