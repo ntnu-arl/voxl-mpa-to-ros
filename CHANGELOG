@@ -1,0 +1,6 @@
+0.0.2
+    * add imu data transfer
+    * add launch file with sample parameters
+0.0.2
+    * baseline transfer of camera data from mpa to ros
+
