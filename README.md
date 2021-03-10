@@ -2,43 +2,35 @@
 
 ROSNode that takes in mpa data and published it to ROS
 
-#### Start Installed TOF ROS Node
+#### Start Installed MPA ROS Node
 ```
 bash
 export ROS_IP=`hostname -i`
-export TOF_CAM_ID=-1
 source /opt/ros/indigo/setup.bash
 roslaunch /opt/ros/indigo/share/voxl_mpa_to_ros/launch/voxl_mpa_to_ros.launch
 ```
 
-- When running a custom build of the package use (assuming it's in `/home/root/git/voxl-hal3-tof-cam-ros`):
-#### Start Locally Built TOF ROS Node
-```
-# this will re-build the code and launch the app
-bash
-export ROS_IP=`hostname -i`
-export TOF_CAM_ID=-1
-cd /home/root/git/voxl_mpa_to_ros
-./clean.sh
-./build.sh
-source ./devel/setup.bash
-roslaunch ./source/launch/mpa.launch
-```
-
 ### Expected Behavior
 ```
-yocto:/# roslaunch voxl_mpa_to_ros voxl_mpa_to_ros.launch
-... logging to /home/root/.ros/log/5924d82e-7d43-11eb-b88d-ec5c68cd23bd/roslaunch-apq8096-3551.log
+... logging to /home/root/.ros/log/8509e9ee-81ca-11eb-b46d-ec5c68cd23bd/roslaunch-apq8096-3794.log
 Checking log directory for disk usage. This may take awhile.
 Press Ctrl-C to interrupt
 Done checking log file disk usage. Usage is <1GB.
 
-started roslaunch server http://192.168.1.83:55783/
+started roslaunch server http://192.168.1.83:48070/
 
 SUMMARY
 ========
 
 PARAMETERS
+ * /mpa/voxl_mpa_to_ros_node/imu0_pipe: imu0
+ * /mpa/voxl_mpa_to_ros_node/imu0_publish: True
+ * /mpa/voxl_mpa_to_ros_node/imu1_pipe: imu1
+ * /mpa/voxl_mpa_to_ros_node/imu1_publish: True
+ * /mpa/voxl_mpa_to_ros_node/stereo_pipe: stereo
+ * /mpa/voxl_mpa_to_ros_node/stereo_publish: True
+ * /mpa/voxl_mpa_to_ros_node/tracking_pipe: tracking
+ * /mpa/voxl_mpa_to_ros_node/tracking_publish: True
  * /rosdistro: indigo
  * /rosversion: 1.11.21
 
@@ -47,20 +39,20 @@ NODES
     voxl_mpa_to_ros_node (voxl_mpa_to_ros/voxl_mpa_to_ros_node)
 
 auto-starting new master
-process[master]: started with pid [3570]
+process[master]: started with pid [3813]
 ROS_MASTER_URI=http://localhost:11311/
 
-setting /run_id to 5924d82e-7d43-11eb-b88d-ec5c68cd23bd
-process[rosout-1]: started with pid [3583]
+setting /run_id to 8509e9ee-81ca-11eb-b46d-ec5c68cd23bd
+process[rosout-1]: started with pid [3826]
 started core service [/rosout]
-process[mpa/voxl_mpa_to_ros_node-2]: started with pid [3592]
+process[mpa/voxl_mpa_to_ros_node-2]: started with pid [3837]
 
 
 MPA to ROS app is now running
 
-Starting Manager Thread with 2 interfaces
-Interface 0 now advertising
-Interface 1 now advertising
-Interface 1 now publishing
-
+Starting Manager Thread with 4 interfaces
+Interface tracking now advertising
+Interface stereo now advertising
+Interface imu0 now advertising
+Interface imu1 now advertising
 ```
