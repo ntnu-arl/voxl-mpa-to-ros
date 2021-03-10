@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 ModalAI Inc.
+ * Copyright 2020 ModalAI Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,21 +31,62 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef ALL_MPA_INTERFACEs
-#define ALL_MPA_INTERFACEs
+#ifndef VIO_MPA_INTERFACE
+#define VIO_MPA_INTERFACE
+
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Odometry.h>
+#include <voxl_mpa_to_ros/InternalStates.h>
 
 #include "generic_interface.h"
-#include "camera_interface.h"
-#include "stereo_interface.h"
-//#include "tof_interface.h"
-#include "imu_interface.h"
 
-enum InterfaceType {
-    INT_CAMERA,
-    INT_STEREO,
-    //INT_TOF,
-    INT_IMU,
-    INT_VIO
+#define NUM_VIO_REQUIRED_CHANNELS 1
+
+class VIOInterface: public GenericInterface
+{
+public:
+    VIOInterface(ros::NodeHandle rosNodeHandle,
+                 int             baseChannel,
+                 const char*     name);
+
+    ~VIOInterface() { };
+
+    int  GetNumClients();
+    void AdvertiseTopics();
+    void StartPublishing();
+    void StopPublishing();
+    void CleanAndExit();
+
+    geometry_msgs::PoseStamped* GetPoseMsg(){
+        return m_poseMsg;
+    }
+    nav_msgs::Odometry* GetOdometryMsg(){
+        return m_odomMsg;
+    }
+    voxl_mpa_to_ros::InternalStates* GetStateMsg(){
+        return m_stateMsg;
+    }
+
+    ros::Publisher GetPosePublisher(){
+        return m_posePublisher;
+    }
+    ros::Publisher GetOdometryPublisher(){
+        return m_odomPublisher;
+    }
+    ros::Publisher GetStatePublisher(){
+        return m_statePublisher;
+    }
+
+private:
+
+    geometry_msgs::PoseStamped*          m_poseMsg;                    ///< Image message
+    nav_msgs::Odometry*                  m_odomMsg;                    ///< Image message
+    voxl_mpa_to_ros::InternalStates*     m_stateMsg;                   ///< Image message
+
+    ros::Publisher                       m_posePublisher;              ///< Image publisher
+    ros::Publisher                       m_odomPublisher;              ///< Image publisher
+    ros::Publisher                       m_statePublisher;             ///< Image publisher
+
 };
-
 #endif
