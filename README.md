@@ -8,7 +8,11 @@ Install mpa-to-ros by installing the latest version of voxl-nodes
 opkg install voxl-nodes
 ```
 
-It is strongly recommended that you install voxl-mpa-tools while using it as the library
+It is strongly recommended that you install voxl-mpa-tools while using mpa-to-ros as the library contains a plethora of useful tools to ensure that mpa is working properly.
+
+```
+opkg install voxl-mpa-tools
+```
 
 
 #### Start Installed MPA ROS Node
@@ -24,10 +28,13 @@ to see a list of available services, and use opkg to install any that are not vi
 You can start/stop these services at any point while mpa to ros is running and it will close
 and open advertisements approprtiately
 
-The current supported mpa->ros translations are:
--Tracking and stereo cameras from voxl-camera-server
--Imu0 and Imu1 from voxl-imu-server
--VIO data from voxl-qvio-server (the data will appear under the qvio name, but it is normal vio data)
+The current supported mpa->ros translations are:  
+
+-Tracking and stereo cameras from voxl-camera-server  
+
+-Imu0 and Imu1 from voxl-imu-server  
+
+-VIO data from voxl-qvio-server (the data will appear under the qvio name, but it is normal vio data)  
 
 ### Expected Behavior
 ```
