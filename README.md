@@ -2,6 +2,21 @@
 
 ROSNode that takes in mpa data and published it to ROS
 
+### Dependencies
+
+* System Image 3.2 or later, [Instructions to Flash](https://docs.modalai.com/flash-system-image/)
+* Camera, VIO and IMU servers, Installation: 
+```
+opkg update
+opkg install voxl-camera-server
+opkg install voxl-qvio-server
+opkg install voxl-imu-server
+```
+  * [voxl-camera-server](https://gitlab.com/voxl-public/modal-pipe-architecture/voxl-camera-server)
+  * [voxl-qvio-server](https://gitlab.com/voxl-public/modal-pipe-architecture/voxl-qvio-server)
+  * [voxl-imu-server](https://gitlab.com/voxl-public/modal-pipe-architecture/voxl-imu-server)
+
+
 ### Installation
 Install mpa-to-ros by installing the latest version of voxl-nodes
 ```
