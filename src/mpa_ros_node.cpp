@@ -43,12 +43,14 @@
 
 //Any additional potential interfaces should be added here, see 
 //potentialInterface struct for reference
-#define NUM_POTENTIAL_INTERFACES 4
+#define NUM_POTENTIAL_INTERFACES 6
 #define POTENTIAL_INTERFACES {\
     {"tracking_pipe", "tracking_publish", INT_CAMERA}, \
     {"stereo_pipe",   "stereo_publish",   INT_STEREO}, \
     {"imu0_pipe",     "imu0_publish",     INT_IMU},    \
-    {"imu1_pipe",     "imu1_publish",     INT_IMU}     \
+    {"imu1_pipe",     "imu1_publish",     INT_IMU},    \
+    {"vio0_pipe",     "vio0_publish",     INT_VIO},    \
+    {"vio1_pipe",     "vio1_publish",     INT_VIO}     \
     }
 
     //{"tof_pipe",      "tof_publish",      INT_TOF},     
@@ -66,16 +68,6 @@ typedef struct PotentialInterface{
 
 }PotentialInterface;
 
-bool pipeExists(const char *pipeName){
-
-    char fullPath[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_client_construct_full_path((char *)pipeName, fullPath);
-    strcat(fullPath, "request");
-
-    return access(fullPath, F_OK) == 0;
-
-}
-
 int MainEnter(int argc, char **argv, ros::NodeHandle nh){
 
     int channel = 0;
@@ -92,36 +84,32 @@ int MainEnter(int argc, char **argv, ros::NodeHandle nh){
             std::string pipeName;
             nh.getParam(pInt.pipeArg, pipeName);
 
-            if(pipeExists(pipeName.c_str())){
-
-                switch (pInt.type){
-                    case INT_CAMERA:
-                        interfaces[numInterfaces] = new CameraInterface(nh, channel, pipeName.c_str());
-                        break;
-                    case INT_STEREO:
-                        interfaces[numInterfaces] = new StereoInterface(nh, channel, pipeName.c_str());
-                        break;
-                    /*case INT_TOF:
-                        interfaces[numInterfaces] = new TofInterface(nh, channel, pipeName.c_str());
-                        break;*/
-                    case INT_IMU:
-                        interfaces[numInterfaces] = new IMUInterface(nh, channel, pipeName.c_str());
-                        break;
-                    default:
-                        printf("Invalid interface type specified for pipe: %s, exiting\n", pipeName.c_str());
-                        return -1;
-                }
-
-                channel += interfaces[numInterfaces]->GetNumRequiredChannels();
-                numInterfaces++;
-
-            } else {
-                printf("Param: %s specified invalid or missing pipe \"%s\", not publishing associated interface\n", pInt.pipeArg.c_str(), pipeName.c_str());
+            switch (pInt.type){
+                case INT_CAMERA:
+                    interfaces[numInterfaces] = new CameraInterface(nh, channel, pipeName.c_str());
+                    break;
+                case INT_STEREO:
+                    interfaces[numInterfaces] = new StereoInterface(nh, channel, pipeName.c_str());
+                    break;
+                /*case INT_TOF:
+                    interfaces[numInterfaces] = new TofInterface(nh, channel, pipeName.c_str());
+                    break;*/
+                case INT_IMU:
+                    interfaces[numInterfaces] = new IMUInterface(nh, channel, pipeName.c_str());
+                    break;
+                case INT_VIO:
+                    interfaces[numInterfaces] = new VIOInterface(nh, channel, pipeName.c_str());
+                    break;
+                default:
+                    printf("Invalid interface type specified for pipe: %s, exiting\n", pipeName.c_str());
+                    return -1;
             }
 
+            channel += interfaces[numInterfaces]->GetNumRequiredChannels();
+            numInterfaces++;
 
         } else {
-            printf("Param: %s set to false, not publishing associated interface\n", pInt.publishArg.c_str());
+            printf("Param: \"%s\" set to false, not publishing associated interface\n", pInt.publishArg.c_str());
         }
 
     }

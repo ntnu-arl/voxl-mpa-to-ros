@@ -23,6 +23,12 @@
     <arg name="imu1_publish"     default="true"    />
     <arg name="imu1_pipe"        default="imu1"    />
 
+    <arg name="vio0_publish"     default="true"    />
+    <arg name="vio0_pipe"        default="qvio"    />
+
+    <arg name="vio1_publish"     default="false"   />
+    <arg name="vio1_pipe"        default=""        />
+
     <!-- Tof is not currently supported, look for it in a future release
     <arg name="tof_publish"      default="false"    />
     <arg name="tof_pipe"         default="tof_pc"  />
@@ -45,6 +51,12 @@
 
             <param name="imu1_publish"     value="$(arg imu1_publish)"     />
             <param name="imu1_pipe"        value="$(arg imu1_pipe)"        />
+-->
+            <param name="vio0_publish"     value="$(arg vio0_publish)"     />
+            <param name="vio0_pipe"        value="$(arg vio0_pipe)"        />
+
+            <param name="vio1_publish"     value="$(arg vio1_publish)"     />
+            <param name="vio1_pipe"        value="$(arg vio1_pipe)"        />
 
             
         </node>

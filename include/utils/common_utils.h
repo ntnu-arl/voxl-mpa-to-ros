@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2020 ModalAI Inc.
+ * Copyright 2021 ModalAI Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,43 +31,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef IMU_MPA_INTERFACE
-#define IMU_MPA_INTERFACE
+#ifndef COMMON_UTILS_H
+#define COMMON_UTILS_H
+
+#include <time.h>
+#include <chrono>
 
 #include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
 
-#include "generic_interface.h"
+int rotation_to_quaternion(float R[3][3], double* q);
 
-#define NUM_IMU_REQUIRED_CHANNELS 1
+ros::Time _clock_monotonic_to_ros_time(uint64_t monotonic_ns);
 
-class IMUInterface: public GenericInterface
-{
-public:
-    IMUInterface(ros::NodeHandle rosNodeHandle,
-                 int             baseChannel,
-                 const char*     name);
+int64_t _time_monotonic_ns();
 
-    ~IMUInterface() { };
+int64_t _time_realtime_ns();
 
-    int  GetNumClients();
-    void AdvertiseTopics();
-    void StartPublishing();
-    void StopPublishing();
-    void Clean();
-
-    sensor_msgs::Imu* GetImuMsg(){
-        return m_imuMsg;
-    }
-
-    ros::Publisher GetPublisher(){
-        return m_rosPublisher;
-    }
-
-private:
-
-    sensor_msgs::Imu*              m_imuMsg;                   ///< Image message
-    ros::Publisher                 m_rosPublisher;          ///< Image publisher
-
-};
 #endif

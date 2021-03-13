@@ -31,24 +31,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef IMU_MPA_INTERFACE
-#define IMU_MPA_INTERFACE
+#ifndef VIO_MPA_INTERFACE
+#define VIO_MPA_INTERFACE
 
 #include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Odometry.h>
 
 #include "generic_interface.h"
 
-#define NUM_IMU_REQUIRED_CHANNELS 1
+#define NUM_VIO_REQUIRED_CHANNELS 1
 
-class IMUInterface: public GenericInterface
+class VIOInterface: public GenericInterface
 {
 public:
-    IMUInterface(ros::NodeHandle rosNodeHandle,
+    VIOInterface(ros::NodeHandle rosNodeHandle,
                  int             baseChannel,
                  const char*     name);
 
-    ~IMUInterface() { };
+    ~VIOInterface() { };
 
     int  GetNumClients();
     void AdvertiseTopics();
@@ -56,18 +57,27 @@ public:
     void StopPublishing();
     void Clean();
 
-    sensor_msgs::Imu* GetImuMsg(){
-        return m_imuMsg;
+    geometry_msgs::PoseStamped* GetPoseMsg(){
+        return m_poseMsg;
+    }
+    nav_msgs::Odometry* GetOdometryMsg(){
+        return m_odomMsg;
     }
 
-    ros::Publisher GetPublisher(){
-        return m_rosPublisher;
+    ros::Publisher GetPosePublisher(){
+        return m_posePublisher;
+    }
+    ros::Publisher GetOdometryPublisher(){
+        return m_odomPublisher;
     }
 
 private:
 
-    sensor_msgs::Imu*              m_imuMsg;                   ///< Image message
-    ros::Publisher                 m_rosPublisher;          ///< Image publisher
+    geometry_msgs::PoseStamped*          m_poseMsg;                    ///< Image message
+    nav_msgs::Odometry*                  m_odomMsg;                    ///< Image message
+
+    ros::Publisher                       m_posePublisher;              ///< Image publisher
+    ros::Publisher                       m_odomPublisher;              ///< Image publisher
 
 };
 #endif

@@ -37,6 +37,7 @@
 #include <string.h>
 #include <ros/ros.h>
 #include <modal_pipe.h>
+#include "common_utils.h"
 
 #define PIPE_CLIENT_NAME "mpa-to-ros"
 
@@ -53,6 +54,10 @@ enum InterfaceState {
  * should follow this structure, see camera_interface for a basic example
  * 
  * All children should call the 4-parameter constructor of this class
+ * 
+ * All children should use the protected disconnect callback function in this class
+ *    as the dc callback for their pipes, which will close them cleanly should
+ *    their server disconnect
  * 
  * rosNodeHandle and basechannel should be supplied by main, numchannels should 
  * be supplied by the child class, and pipename should be supplied by main via a rosparam
@@ -79,9 +84,9 @@ public:
 
     /**
      * The interface should inspect all of its output messages and determine
-     * if any have subscribers
+     * how many subscribers it has
      *
-     * @return     True if this interface has ros subscribers, false otherwise
+     * @return     Numbr of subscribers this interface has
      */
     virtual int GetNumClients()        = 0;
 
@@ -119,10 +124,14 @@ public:
      * 
      * state should be set to clean at the end of a successful call
      */
-    virtual void CleanAndExit()        = 0;
+    virtual void Clean()        = 0;
 
     InterfaceState GetState(){
         return m_state;
+    }
+
+    void SetState(InterfaceState state){
+        m_state = state;
     }
 
     const int GetNumRequiredChannels(){
@@ -134,6 +143,18 @@ public:
     }
 
 protected:
+
+    static void _interface_dc_cb(int ch, void* context){
+
+        GenericInterface *interface = (GenericInterface *)context;
+
+        printf("Interface: %s's data pipe disconnected, closing until it returns\n", interface->GetPipeName());
+
+        interface->StopPublishing();
+        interface->Clean();
+        interface->SetState(ST_READY);
+
+    }
 
     const ros::NodeHandle   m_rosNodeHandle;
     const int               m_baseChannel         = 0;

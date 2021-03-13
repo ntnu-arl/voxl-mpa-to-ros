@@ -61,7 +61,7 @@ void CameraInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s", m_pipeName);
+    sprintf(topicName, "/%s/image_raw", m_pipeName);
     m_rosImagePublisher = it.advertise(topicName, 1);
 
     m_state = ST_AD;
@@ -76,6 +76,7 @@ void CameraInterface::StartPublishing(){
                 EN_PIPE_CLIENT_CAMERA_HELPER, 0)){
         printf("Error opening pipe: %s\n", m_pipeName);
     } else {
+        pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
         m_state = ST_RUNNING;
     }
 
@@ -87,7 +88,7 @@ void CameraInterface::StopPublishing(){
 
 }
 
-void CameraInterface::CleanAndExit(){
+void CameraInterface::Clean(){
 
     m_rosImagePublisher.shutdown();
     delete m_imageMsg;
@@ -108,6 +109,9 @@ static void _frame_cb(
 {
 
     CameraInterface *interface = (CameraInterface *) context;
+
+    if(interface->GetState() != ST_RUNNING) return;
+
     image_transport::Publisher publisher = interface->GetPublisher();
     sensor_msgs::Image* img = interface->GetImageMsg();
 
