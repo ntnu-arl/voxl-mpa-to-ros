@@ -45,6 +45,8 @@ You can start/stop these services at any point while mpa to ros is running and i
 and open advertisements approprtiately. To start/stop these mpa services, you can use:
 ```
 systemctl start voxl-camera-server
+systemctl start voxl-imu-server
+systemctl start voxl-qvio-server
 ```
 or similarly replacing start with stop or camera server with another mpa server name. Additionally, 
 you can run any of these servers in an ssh or adb window by typing their executable name i.e.
