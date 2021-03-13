@@ -7,10 +7,10 @@ ROSNode that takes in mpa data and published it to ROS
 * System Image 3.2 or later, [Instructions to Flash](https://docs.modalai.com/flash-system-image/)
 * Camera, VIO and IMU servers, Installation: 
 ```
-opkg update
-opkg install voxl-camera-server
-opkg install voxl-qvio-server
-opkg install voxl-imu-server
+yocto:~# opkg update
+yocto:~# opkg install voxl-camera-server
+yocto:~# opkg install voxl-qvio-server
+yocto:~# opkg install voxl-imu-server
 ```
   * [voxl-camera-server](https://gitlab.com/voxl-public/modal-pipe-architecture/voxl-camera-server)
   * [voxl-qvio-server](https://gitlab.com/voxl-public/modal-pipe-architecture/voxl-qvio-server)
@@ -20,22 +20,22 @@ opkg install voxl-imu-server
 ### Installation
 Install mpa-to-ros by installing the latest version of voxl-nodes
 ```
-opkg install voxl-nodes
+yocto:~# opkg install voxl-nodes
 ```
 
 It is strongly recommended that you install voxl-mpa-tools while using mpa-to-ros as the library contains a plethora of useful tools to ensure that mpa is working properly.
 
 ```
-opkg install voxl-mpa-tools
+yocto:~# opkg install voxl-mpa-tools
 ```
 
 
 ### Start Installed MPA ROS Node
 ```
-bash
-export ROS_IP=`hostname -i`
-source /opt/ros/indigo/setup.bash
-roslaunch voxl_mpa_to_ros voxl_mpa_to_ros.launch
+yocto:~# bash
+yocto:~# export ROS_IP=`hostname -i`
+yocto:~# source /opt/ros/indigo/setup.bash
+yocto:~# roslaunch voxl_mpa_to_ros voxl_mpa_to_ros.launch
 ```
 ##### Usage Instructions
 In order for ros topics to actually appear, you must make sure that the relative
@@ -44,14 +44,14 @@ to see a list of available services, and use opkg to install any that are not vi
 You can start/stop these services at any point while mpa to ros is running and it will close
 and open advertisements approprtiately. To start/stop these mpa services, you can use:
 ```
-systemctl start voxl-camera-server
-systemctl start voxl-imu-server
-systemctl start voxl-qvio-server
+yocto:~# systemctl start voxl-camera-server
+yocto:~# systemctl start voxl-imu-server
+yocto:~# systemctl start voxl-qvio-server
 ```
 or similarly replacing start with stop or camera server with another mpa server name. Additionally, 
 you can run any of these servers in an ssh or adb window by typing their executable name i.e.
 ```
-voxl-camera-server
+yocto:~# voxl-camera-server
 ```
 Manually running these will require an open shell window, but will often have the ability to more 
 easily see logged data from the servers.
