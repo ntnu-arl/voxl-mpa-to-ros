@@ -1,3 +1,6 @@
+0.0.3
+    * add vio data transfer
+    * interfaces will recover if their servers restart
 0.0.2
     * add imu data transfer
     * add launch file with sample parameters

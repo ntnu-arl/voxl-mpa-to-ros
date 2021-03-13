@@ -31,7 +31,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
+#ifndef CAMERA_HELPERS_H
+#define CAMERA_HELPERS_H
+
+#include <string>
 
 int GetStepSize(int format);
 
 const std::string GetRosFormat(int format);
+
+#endif

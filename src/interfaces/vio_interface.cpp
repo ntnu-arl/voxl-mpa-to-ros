@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 #include <modal_pipe.h>
-#include "imu_interface.h"
+#include "vio_interface.h"
 
 static void _helper_cb(
     __attribute__((unused))int ch, 
@@ -39,45 +39,45 @@ static void _helper_cb(
                            int bytes, 
                            void* context);
 
-IMUInterface::IMUInterface(
+VIOInterface::VIOInterface(
     ros::NodeHandle rosNodeHandle,
     int             baseChannel,
     const char *    name) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_IMU_REQUIRED_CHANNELS, name)
+    GenericInterface(rosNodeHandle, baseChannel, NUM_VIO_REQUIRED_CHANNELS, name)
 {
-
-    m_imuMsg = new sensor_msgs::Imu;
-    m_imuMsg->header.frame_id = "map";
-    m_imuMsg->orientation.x = 0;
-    m_imuMsg->orientation.y = 0;
-    m_imuMsg->orientation.z = 0;
-    m_imuMsg->orientation.w = 0;
-    m_imuMsg->orientation_covariance         = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0};
-    m_imuMsg->angular_velocity_covariance    = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    m_imuMsg->linear_acceleration_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
 
     pipe_client_set_simple_helper_cb(m_baseChannel, _helper_cb, this);
 
 
 }
 
-void IMUInterface::AdvertiseTopics(){
+void VIOInterface::AdvertiseTopics(){
 
-    char topicName[64];
+    char frameName[64];
 
-    sprintf(topicName, "/%s", m_pipeName);
-    m_rosPublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<sensor_msgs::Imu>(topicName, 1);
+    sprintf(frameName, "/%s/pose", m_pipeName);
+    m_posePublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<geometry_msgs::PoseStamped>(frameName,1);
+
+    m_poseMsg = new geometry_msgs::PoseStamped;
+    m_poseMsg->header.frame_id = "map";
+
+    sprintf(frameName, "/%s/odometry", m_pipeName);
+    m_odomPublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<nav_msgs::Odometry>(frameName,1);
+
+    m_odomMsg = new nav_msgs::Odometry;
+    m_odomMsg->header.frame_id = "map";
+    m_odomMsg->child_frame_id  = "map";
 
     m_state = ST_AD;
 
 }
-void IMUInterface::StartPublishing(){
+void VIOInterface::StartPublishing(){
 
     char fullName[MODAL_PIPE_MAX_PATH_LEN];
     pipe_client_construct_full_path(m_pipeName, fullName);
 
     if(pipe_client_init_channel(m_baseChannel, fullName, PIPE_CLIENT_NAME,
-                EN_PIPE_CLIENT_SIMPLE_HELPER, IMU_RECOMMENDED_READ_BUF_SIZE)){
+                EN_PIPE_CLIENT_SIMPLE_HELPER, VIO_RECOMMENDED_READ_BUF_SIZE)){
         printf("Error opening pipe: %s\n", m_pipeName);
     } else {
         pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
@@ -85,23 +85,27 @@ void IMUInterface::StartPublishing(){
     }
 
 }
-void IMUInterface::StopPublishing(){
+void VIOInterface::StopPublishing(){
 
-    pipe_client_close_channel(m_baseChannel);
-    m_state = ST_AD;
+    if(m_state == ST_RUNNING){
+        pipe_client_close_channel(m_baseChannel);
+        m_state = ST_AD;
+    }
 
 }
 
-void IMUInterface::Clean(){
+void VIOInterface::Clean(){
 
-    m_rosPublisher.shutdown();
-    delete m_imuMsg;
+    m_posePublisher.shutdown();
+    m_odomPublisher.shutdown();
+    delete m_poseMsg;
+    delete m_odomMsg;
     m_state = ST_CLEAN;
 
 }
 
-int IMUInterface::GetNumClients(){
-    return m_rosPublisher.getNumSubscribers();
+int VIOInterface::GetNumClients(){
+    return m_posePublisher.getNumSubscribers() + m_odomPublisher.getNumSubscribers();
 }
 
 // called when the simple helper has data for us
@@ -110,30 +114,45 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
     // validate that the data makes sense
     int n_packets;
-    imu_data_t* data_array = modal_imu_validate_pipe_data(data, bytes, &n_packets);
+    vio_data_t* data_array = modal_vio_validate_pipe_data(data, bytes, &n_packets);
     if(data_array == NULL) return;
 
-    IMUInterface *interface = (IMUInterface *) context;
-    ros::Publisher publisher = interface->GetPublisher();
-    sensor_msgs::Imu* imu = interface->GetImuMsg();
+    VIOInterface *interface = (VIOInterface *) context;
 
-    // make a new data struct to hold the average
-    imu_data_t avg;
-    memset(&avg,0,sizeof(avg));
+    if(interface->GetState() != ST_RUNNING) return;
 
-    // sum all the samples
+    ros::Publisher posePublisher  = interface->GetPosePublisher();
+    ros::Publisher odomPublisher  = interface->GetOdometryPublisher();
+
+    geometry_msgs::PoseStamped*       poseMsg  = interface->GetPoseMsg();
+    nav_msgs::Odometry*               odomMsg  = interface->GetOdometryMsg();
+
     for(int i=0;i<n_packets;i++){
-        imu->header.stamp.fromNSec(data_array[i].timestamp_ns);
-        imu->angular_velocity.x = data_array[i].gyro_rad[0];
-        imu->angular_velocity.y = data_array[i].gyro_rad[1];
-        imu->angular_velocity.z = data_array[i].gyro_rad[2];
-        imu->linear_acceleration.x = data_array[i].accl_ms2[0];
-        imu->linear_acceleration.y = data_array[i].accl_ms2[1];
-        imu->linear_acceleration.z = data_array[i].accl_ms2[2];
-        publisher.publish(*imu);
 
+        vio_data_t data = data_array[i];
+
+        poseMsg->header.stamp.fromNSec(data.timestamp_ns);
+        odomMsg->header.stamp.fromNSec(data.timestamp_ns);
+
+        // translate VIO pose to ROS pose
+
+        rotation_to_quaternion(data.R_imu_to_vio, (double *)(&(poseMsg->pose.orientation.x)));
+
+        poseMsg->pose.position.x = data.T_imu_wrt_vio[0];
+        poseMsg->pose.position.y = data.T_imu_wrt_vio[1];
+        poseMsg->pose.position.z = data.T_imu_wrt_vio[2];
+        posePublisher.publish(*poseMsg);
+
+        odomMsg->pose.pose = poseMsg->pose;
+        odomMsg->twist.twist.linear.x = data.vel_imu_wrt_vio[0];
+        odomMsg->twist.twist.linear.y = data.vel_imu_wrt_vio[1];
+        odomMsg->twist.twist.linear.z = data.vel_imu_wrt_vio[2];
+        odomMsg->twist.twist.angular.x = data.imu_angular_vel[0];
+        odomMsg->twist.twist.angular.y = data.imu_angular_vel[1];
+        odomMsg->twist.twist.angular.z = data.imu_angular_vel[2];
+
+        odomPublisher.publish(*odomMsg);
     }
-
 
     return;
 }

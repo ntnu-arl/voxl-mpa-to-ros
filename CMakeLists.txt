@@ -58,7 +58,9 @@ catkin_package(
     dynamic_reconfigure
     image_transport
     sensor_msgs
+    geometry_msgs
   )
+
 
 include_directories(
   ${catkin_INCLUDE_DIRS}

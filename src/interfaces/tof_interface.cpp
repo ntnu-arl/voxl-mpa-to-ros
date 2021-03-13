@@ -93,7 +93,7 @@ void TofInterface::StopPublishing(){
 
 }
 
-void TofInterface::CleanAndExit(){
+void TofInterface::Clean(){
 
     m_irImagePublisher.shutdown();
     delete m_irImageMsg;

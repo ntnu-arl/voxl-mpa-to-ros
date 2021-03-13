@@ -31,6 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
+#include "camera_helpers.h"
 #include <modal_pipe.h>
 #include <string> 
 #include <sensor_msgs/image_encodings.h>
