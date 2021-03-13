@@ -2,7 +2,7 @@
 
 ROSNode that takes in mpa data and published it to ROS
 
-#### Installation
+### Installation
 Install mpa-to-ros by installing the latest version of voxl-nodes
 ```
 opkg install voxl-nodes
@@ -15,19 +15,31 @@ opkg install voxl-mpa-tools
 ```
 
 
-#### Start Installed MPA ROS Node
+### Start Installed MPA ROS Node
 ```
 bash
 export ROS_IP=`hostname -i`
 source /opt/ros/indigo/setup.bash
 roslaunch voxl_mpa_to_ros voxl_mpa_to_ros.launch
 ```
+##### Usage Instructions
 In order for ros topics to actually appear, you must make sure that the relative
 mpa server is started. You can use voxl-inspect-services from the mpa-tools library
 to see a list of available services, and use opkg to install any that are not visible there.
 You can start/stop these services at any point while mpa to ros is running and it will close
-and open advertisements approprtiately
+and open advertisements approprtiately. To start/stop these mpa services, you can use:
+```
+systemctl start voxl-camera-server
+```
+or similarly replacing start with stop or camera server with another mpa server name. Additionally, 
+you can run any of these servers in an ssh or adb window by typing their executable name i.e.
+```
+voxl-camera-server
+```
+Manually running these will require an open shell window, but will often have the ability to more 
+easily see logged data from the servers.
 
+##### Supported Interfaces
 The current supported mpa->ros translations are:  
 
 -Tracking and stereo cameras from voxl-camera-server  
