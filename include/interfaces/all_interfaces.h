@@ -39,6 +39,7 @@
 #include "stereo_interface.h"
 //#include "tof_interface.h"
 #include "imu_interface.h"
+#include "vio_interface.h"
 
 enum InterfaceType {
     INT_CAMERA,

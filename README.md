@@ -2,22 +2,42 @@
 
 ROSNode that takes in mpa data and published it to ROS
 
+#### Installation
+Install mpa-to-ros by installing the latest version of voxl-nodes
+```
+opkg install voxl-nodes
+```
+
+It is strongly recommended that you install voxl-mpa-tools while using it as the library
+
+
 #### Start Installed MPA ROS Node
 ```
 bash
 export ROS_IP=`hostname -i`
 source /opt/ros/indigo/setup.bash
-roslaunch /opt/ros/indigo/share/voxl_mpa_to_ros/launch/voxl_mpa_to_ros.launch
+roslaunch voxl_mpa_to_ros voxl_mpa_to_ros.launch
 ```
+In order for ros topics to actually appear, you must make sure that the relative
+mpa server is started. You can use voxl-inspect-services from the mpa-tools library
+to see a list of available services, and use opkg to install any that are not visible there.
+You can start/stop these services at any point while mpa to ros is running and it will close
+and open advertisements approprtiately
+
+The current supported mpa->ros translations are:
+-Tracking and stereo cameras from voxl-camera-server
+-Imu0 and Imu1 from voxl-imu-server
+-VIO data from voxl-qvio-server (the data will appear under the qvio name, but it is normal vio data)
 
 ### Expected Behavior
 ```
-... logging to /home/root/.ros/log/8509e9ee-81ca-11eb-b46d-ec5c68cd23bd/roslaunch-apq8096-3794.log
+yocto:~# voxl-mpa-to-ros
+... logging to /home/root/.ros/log/950b976a-839c-11eb-a1c1-ec5c68cd23bd/roslaunch-apq8096-22692.log
 Checking log directory for disk usage. This may take awhile.
 Press Ctrl-C to interrupt
 Done checking log file disk usage. Usage is <1GB.
 
-started roslaunch server http://192.168.1.83:48070/
+started roslaunch server http://192.168.1.83:55583/
 
 SUMMARY
 ========
@@ -31,6 +51,10 @@ PARAMETERS
  * /mpa/voxl_mpa_to_ros_node/stereo_publish: True
  * /mpa/voxl_mpa_to_ros_node/tracking_pipe: tracking
  * /mpa/voxl_mpa_to_ros_node/tracking_publish: True
+ * /mpa/voxl_mpa_to_ros_node/vio0_pipe: qvio
+ * /mpa/voxl_mpa_to_ros_node/vio0_publish: True
+ * /mpa/voxl_mpa_to_ros_node/vio1_pipe: 
+ * /mpa/voxl_mpa_to_ros_node/vio1_publish: False
  * /rosdistro: indigo
  * /rosversion: 1.11.21
 
@@ -39,20 +63,24 @@ NODES
     voxl_mpa_to_ros_node (voxl_mpa_to_ros/voxl_mpa_to_ros_node)
 
 auto-starting new master
-process[master]: started with pid [3813]
+process[master]: started with pid [22711]
 ROS_MASTER_URI=http://localhost:11311/
 
-setting /run_id to 8509e9ee-81ca-11eb-b46d-ec5c68cd23bd
-process[rosout-1]: started with pid [3826]
+setting /run_id to 950b976a-839c-11eb-a1c1-ec5c68cd23bd
+process[rosout-1]: started with pid [22724]
 started core service [/rosout]
-process[mpa/voxl_mpa_to_ros_node-2]: started with pid [3837]
+process[mpa/voxl_mpa_to_ros_node-2]: started with pid [22741]
+Param: "vio1_publish" set to false, not publishing associated interface
 
 
 MPA to ROS app is now running
 
-Starting Manager Thread with 4 interfaces
-Interface tracking now advertising
-Interface stereo now advertising
-Interface imu0 now advertising
-Interface imu1 now advertising
+Starting Manager Thread with 5 interfaces
+
+Found pipe for interface: tracking, now advertising
+Did not find pipe for interface: stereo,
+    interface will be idle until its pipe appears
+Found pipe for interface: imu0, now advertising
+Found pipe for interface: imu1, now advertising
+Found pipe for interface: qvio, now advertising
 ```

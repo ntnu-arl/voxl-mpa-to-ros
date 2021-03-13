@@ -87,6 +87,7 @@ void StereoInterface::StartPublishing(){
                 EN_PIPE_CLIENT_CAMERA_HELPER, 0)){
         printf("Error opening pipe: %s\n", m_pipeName);
     } else {
+        pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
         m_state = ST_RUNNING;
     }
 
@@ -98,7 +99,7 @@ void StereoInterface::StopPublishing(){
 
 }
 
-void StereoInterface::CleanAndExit(){
+void StereoInterface::Clean(){
 
     m_rosImagePublisherL.shutdown();
     m_rosImagePublisherR.shutdown();
@@ -124,10 +125,12 @@ static void _frame_cb(
 
     StereoInterface *interface = (StereoInterface *) context;
 
+    if(interface->GetState() != ST_RUNNING) return;
+
     if(meta.format != IMAGE_FORMAT_STEREO_RAW8){
         printf("Stereo interface received non-stereo frame, exiting stereo\n");
         interface->StopPublishing();
-        interface->CleanAndExit();
+        interface->Clean();
     }
 
     image_transport::Publisher publisherL = interface->GetPublisherL();

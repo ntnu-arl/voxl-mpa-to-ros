@@ -49,18 +49,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf2
   tf2_ros
-  message_generation
   )
 
-add_message_files(
-  FILES
-  InternalStates.msg
-)
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-)
 catkin_package(
   CATKIN_DEPENDS
     roscpp
@@ -69,7 +59,6 @@ catkin_package(
     image_transport
     sensor_msgs
     geometry_msgs
-    message_runtime
   )
 
 

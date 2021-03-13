@@ -37,7 +37,6 @@
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
-#include <voxl_mpa_to_ros/InternalStates.h>
 
 #include "generic_interface.h"
 
@@ -56,16 +55,13 @@ public:
     void AdvertiseTopics();
     void StartPublishing();
     void StopPublishing();
-    void CleanAndExit();
+    void Clean();
 
     geometry_msgs::PoseStamped* GetPoseMsg(){
         return m_poseMsg;
     }
     nav_msgs::Odometry* GetOdometryMsg(){
         return m_odomMsg;
-    }
-    voxl_mpa_to_ros::InternalStates* GetStateMsg(){
-        return m_stateMsg;
     }
 
     ros::Publisher GetPosePublisher(){
@@ -74,19 +70,14 @@ public:
     ros::Publisher GetOdometryPublisher(){
         return m_odomPublisher;
     }
-    ros::Publisher GetStatePublisher(){
-        return m_statePublisher;
-    }
 
 private:
 
     geometry_msgs::PoseStamped*          m_poseMsg;                    ///< Image message
     nav_msgs::Odometry*                  m_odomMsg;                    ///< Image message
-    voxl_mpa_to_ros::InternalStates*     m_stateMsg;                   ///< Image message
 
     ros::Publisher                       m_posePublisher;              ///< Image publisher
     ros::Publisher                       m_odomPublisher;              ///< Image publisher
-    ros::Publisher                       m_statePublisher;             ///< Image publisher
 
 };
 #endif

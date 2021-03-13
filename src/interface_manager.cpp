@@ -39,6 +39,8 @@
 
 static void* ThreadManageInterfaces(void *pData);
 
+static bool pipeExists(const char *pipeName);
+
 // -----------------------------------------------------------------------------------------------------------------------------
 // Constructor
 // -----------------------------------------------------------------------------------------------------------------------------
@@ -85,15 +87,18 @@ static void* ThreadManageInterfaces(void *pData){
     ThreadData*        pThreadData = (ThreadData*)pData;
     InterfaceManager*  manager     = pThreadData->manager;
 
-    printf("Starting Manager Thread with %d interfaces\n",manager->GetNumInterfaces());
+    printf("Starting Manager Thread with %d interfaces\n\n",manager->GetNumInterfaces());
 
     for(int i = 0; i < manager->GetNumInterfaces(); i++){
 
         GenericInterface *interface = manager->GetInterface(i);
 
-        if(interface->GetState() == ST_READY){
-            printf("Interface %s now advertising\n", interface->GetPipeName());
+        if(pipeExists(interface->GetPipeName())){
             interface->AdvertiseTopics();
+            printf("Found pipe for interface: %s, now advertising\n", interface->GetPipeName());
+        } else {
+            printf("Did not find pipe for interface: %s,\n\
+\tinterface will be idle until its pipe appears\n", interface->GetPipeName());
         }
 
     }
@@ -104,11 +109,23 @@ static void* ThreadManageInterfaces(void *pData){
 
             GenericInterface *interface = manager->GetInterface(i);
 
+            if(interface->GetState() == ST_READY && pipeExists(interface->GetPipeName())){
+                interface->AdvertiseTopics();
+                printf("Found pipe for interface: %s, now advertising\n", interface->GetPipeName());
+            }
+
             if(interface->GetState() == ST_RUNNING && interface->GetNumClients() == 0){
                 interface->StopPublishing();
                 if(interface->GetState() == ST_AD){
                     printf("Interface %s ceasing to publish\n", interface->GetPipeName());
                 }
+                continue;
+            }
+
+            if(interface->GetState() == ST_AD && !pipeExists(interface->GetPipeName())){
+                interface->Clean();
+                interface->SetState(ST_READY);
+                printf("Interface: %s's data pipe disconnected, closing until it returns\n", interface->GetPipeName());
                 continue;
             }
 
@@ -134,11 +151,21 @@ static void* ThreadManageInterfaces(void *pData){
         }
 
         if(interface->GetState() == ST_AD){
-            interface->CleanAndExit();
+            interface->Clean();
         }
 
     }
 
     return NULL;
+
+}
+
+static bool pipeExists(const char *pipeName){
+
+    char fullPath[MODAL_PIPE_MAX_PATH_LEN];
+    pipe_client_construct_full_path((char *)pipeName, fullPath);
+    strcat(fullPath, "request");
+
+    return access(fullPath, F_OK) == 0;
 
 }

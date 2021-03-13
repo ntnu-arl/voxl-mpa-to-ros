@@ -47,7 +47,7 @@ IMUInterface::IMUInterface(
 {
 
     m_imuMsg = new sensor_msgs::Imu;
-    m_imuMsg->header.frame_id = name;
+    m_imuMsg->header.frame_id = "map";
     m_imuMsg->orientation.x = 0;
     m_imuMsg->orientation.y = 0;
     m_imuMsg->orientation.z = 0;
@@ -80,6 +80,7 @@ void IMUInterface::StartPublishing(){
                 EN_PIPE_CLIENT_SIMPLE_HELPER, IMU_RECOMMENDED_READ_BUF_SIZE)){
         printf("Error opening pipe: %s\n", m_pipeName);
     } else {
+        pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
         m_state = ST_RUNNING;
     }
 
@@ -91,7 +92,7 @@ void IMUInterface::StopPublishing(){
 
 }
 
-void IMUInterface::CleanAndExit(){
+void IMUInterface::Clean(){
 
     m_rosPublisher.shutdown();
     delete m_imuMsg;

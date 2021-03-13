@@ -82,7 +82,7 @@ public:
     void AdvertiseTopics();
     void StartPublishing();
     void StopPublishing();
-    void CleanAndExit();
+    void Clean();
 
     void InitializeCameraInfoMessage();
 

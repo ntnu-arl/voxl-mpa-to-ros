@@ -56,7 +56,7 @@ public:
     void AdvertiseTopics();
     void StartPublishing();
     void StopPublishing();
-    void CleanAndExit();
+    void Clean();
 
     sensor_msgs::Image* GetImageMsg(){
         return m_imageMsg;
