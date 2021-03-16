@@ -35,39 +35,20 @@
 #define TOF_MPA_INTERFACE
 
 #include <sensor_msgs/CameraInfo.h>
-#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/camera_publisher.h>
 
 #include "generic_interface.h"
 
-#define NUM_TOF_REQUIRED_CHANNELS 4
-
-#define TOF_PC_CHANNEL    (m_baseChannel)
-#define TOF_IR_CHANNEL    (m_baseChannel + 1)
-#define TOF_NOISE_CHANNEL (m_baseChannel + 2)
-#define TOF_CONF_CHANNEL  (m_baseChannel + 3)
+#define NUM_TOF_REQUIRED_CHANNELS 1
 
 #define FLIPIMAGE true
 
 #define TofImageWidth  224
 #define TofImageHeight 172
 #define TofImageSize   (TofImageHeight * TofImageWidth)
-
-typedef struct PointCloud{
-    float points[TofImageSize * 3];
-    float noise[TofImageSize];
-    uint8_t conf[TofImageSize];
-    uint8_t ir[TofImageSize];
-}PointCloud;
-
-typedef struct RingNode {
-    PointCloud pc;
-    struct RingNode *next;
-    int flag = 0;
-    int64_t timestamp_ns = -1;
-} RingNode;
 
 class TofInterface: public GenericInterface
 {
@@ -84,13 +65,14 @@ public:
     void StopPublishing();
     void Clean();
 
-    void InitializeCameraInfoMessage();
+    void InitializeCameraInfoMessage(const char *frame_id);
+    void InitializePointCloudMessage(const char *frame_id);
 
     sensor_msgs::CameraInfo GetCamInfo(){
         return m_cameraInfoMsg;
     }
 
-    sensor_msgs::Image* GetIRMsg(){
+    sensor_msgs::Image GetIRMsg(){
         return m_irImageMsg;
     }
 
@@ -98,23 +80,58 @@ public:
         return m_irImagePublisher;
     }
 
+    sensor_msgs::Image GetDepthMsg(){
+        return m_depthImageMsg;
+    }
+
+    image_transport::CameraPublisher GetDepthPublisher(){
+        return m_depthImagePublisher;
+    }
+
+    sensor_msgs::Image GetConfMsg(){
+        return m_confImageMsg;
+    }
+
+    image_transport::CameraPublisher GetConfPublisher(){
+        return m_confImagePublisher;
+    }
+
+    sensor_msgs::Image GetNoiseMsg(){
+        return m_noiseImageMsg;
+    }
+
+    image_transport::CameraPublisher GetNoisePublisher(){
+        return m_noiseImagePublisher;
+    }
+
+    sensor_msgs::PointCloud2 GetPCMsg(){
+        return m_pcMsg;
+    }
+    ros::Publisher GetPCPublisher(){
+        return m_pcPublisher;
+    }
+
+    int                                    m_pcConfThreshold;              ///< Confidence thrshold to not publish points
+
 private:
+    sensor_msgs::CameraInfo                m_cameraInfoMsg;                ///< Camera Info message
 
-    sensor_msgs::CameraInfo                m_cameraInfoMsg;                   ///< Camera Info message
+    sensor_msgs::Image                     m_irImageMsg;                   ///< IR Image message
+    image_transport::CameraPublisher       m_irImagePublisher;             ///< IR Image publisher
 
-    sensor_msgs::Image*                    m_irImageMsg;                 ///< Image message
-    image_transport::CameraPublisher       m_irImagePublisher;          ///< Image publisher
+    sensor_msgs::Image                     m_depthImageMsg;                ///< Depth Image message
+    image_transport::CameraPublisher       m_depthImagePublisher;          ///< Depth Image publisher
 
-    sensor_msgs::Image*                    m_confImageMsg;                 ///< Image message
-    image_transport::CameraPublisher       m_confImagePublisher;          ///< Image publisher
+    sensor_msgs::Image                     m_confImageMsg;                 ///< Confidence Image message
+    image_transport::CameraPublisher       m_confImagePublisher;           ///< Confidence Image publisher
 
-    sensor_msgs::Image*                    m_noiseImageMsg;                 ///< Image message
-    image_transport::CameraPublisher       m_noiseImagePublisher;          ///< Image publisher
+    sensor_msgs::Image                     m_noiseImageMsg;                ///< Noise Image message
+    image_transport::CameraPublisher       m_noiseImagePublisher;          ///< Noise Image publisher
 
-    char                                   m_baseName [MODAL_PIPE_MAX_PATH_LEN];
-    char                                   m_irName   [MODAL_PIPE_MAX_PATH_LEN];
-    char                                   m_confName [MODAL_PIPE_MAX_PATH_LEN];
-    char                                   m_noiseName[MODAL_PIPE_MAX_PATH_LEN];
+    sensor_msgs::PointCloud2               m_pcMsg;                        ///< Point cloud message
+    ros::Publisher                         m_pcPublisher;                  ///< Point cloud publisher
+
+
 
 };
 #endif

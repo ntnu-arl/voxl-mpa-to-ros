@@ -156,7 +156,7 @@ protected:
 
     }
 
-    const ros::NodeHandle   m_rosNodeHandle;
+    ros::NodeHandle         m_rosNodeHandle;
     const int               m_baseChannel         = 0;
     const int               m_numRequiredChannels = 0;
     char                    m_pipeName[MODAL_PIPE_MAX_PATH_LEN];

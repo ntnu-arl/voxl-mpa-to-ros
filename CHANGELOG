@@ -1,3 +1,5 @@
+0.0.4
+    * add hires and tof data transfer
 0.0.3
     * add vio data transfer
     * interfaces will recover if their servers restart

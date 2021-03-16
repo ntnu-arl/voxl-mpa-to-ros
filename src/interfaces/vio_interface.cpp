@@ -46,8 +46,15 @@ VIOInterface::VIOInterface(
     GenericInterface(rosNodeHandle, baseChannel, NUM_VIO_REQUIRED_CHANNELS, name)
 {
 
+    const char *frame_id = "map";
+
     pipe_client_set_simple_helper_cb(m_baseChannel, _helper_cb, this);
 
+
+    m_poseMsg.header.frame_id = frame_id;
+
+    m_odomMsg.header.frame_id = frame_id;
+    m_odomMsg.child_frame_id  = frame_id;
 
 }
 
@@ -58,15 +65,8 @@ void VIOInterface::AdvertiseTopics(){
     sprintf(frameName, "/%s/pose", m_pipeName);
     m_posePublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<geometry_msgs::PoseStamped>(frameName,1);
 
-    m_poseMsg = new geometry_msgs::PoseStamped;
-    m_poseMsg->header.frame_id = "map";
-
     sprintf(frameName, "/%s/odometry", m_pipeName);
     m_odomPublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<nav_msgs::Odometry>(frameName,1);
-
-    m_odomMsg = new nav_msgs::Odometry;
-    m_odomMsg->header.frame_id = "map";
-    m_odomMsg->child_frame_id  = "map";
 
     m_state = ST_AD;
 
@@ -98,8 +98,7 @@ void VIOInterface::Clean(){
 
     m_posePublisher.shutdown();
     m_odomPublisher.shutdown();
-    delete m_poseMsg;
-    delete m_odomMsg;
+
     m_state = ST_CLEAN;
 
 }
@@ -124,34 +123,34 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
     ros::Publisher posePublisher  = interface->GetPosePublisher();
     ros::Publisher odomPublisher  = interface->GetOdometryPublisher();
 
-    geometry_msgs::PoseStamped*       poseMsg  = interface->GetPoseMsg();
-    nav_msgs::Odometry*               odomMsg  = interface->GetOdometryMsg();
+    geometry_msgs::PoseStamped        poseMsg  = interface->GetPoseMsg();
+    nav_msgs::Odometry                odomMsg  = interface->GetOdometryMsg();
 
     for(int i=0;i<n_packets;i++){
 
         vio_data_t data = data_array[i];
 
-        poseMsg->header.stamp.fromNSec(data.timestamp_ns);
-        odomMsg->header.stamp.fromNSec(data.timestamp_ns);
+        poseMsg.header.stamp.fromNSec(data.timestamp_ns);
+        odomMsg.header.stamp.fromNSec(data.timestamp_ns);
 
         // translate VIO pose to ROS pose
 
-        rotation_to_quaternion(data.R_imu_to_vio, (double *)(&(poseMsg->pose.orientation.x)));
+        rotation_to_quaternion(data.R_imu_to_vio, (double *)(&(poseMsg.pose.orientation.x)));
 
-        poseMsg->pose.position.x = data.T_imu_wrt_vio[0];
-        poseMsg->pose.position.y = data.T_imu_wrt_vio[1];
-        poseMsg->pose.position.z = data.T_imu_wrt_vio[2];
-        posePublisher.publish(*poseMsg);
+        poseMsg.pose.position.x = data.T_imu_wrt_vio[0];
+        poseMsg.pose.position.y = data.T_imu_wrt_vio[1];
+        poseMsg.pose.position.z = data.T_imu_wrt_vio[2];
+        posePublisher.publish(poseMsg);
 
-        odomMsg->pose.pose = poseMsg->pose;
-        odomMsg->twist.twist.linear.x = data.vel_imu_wrt_vio[0];
-        odomMsg->twist.twist.linear.y = data.vel_imu_wrt_vio[1];
-        odomMsg->twist.twist.linear.z = data.vel_imu_wrt_vio[2];
-        odomMsg->twist.twist.angular.x = data.imu_angular_vel[0];
-        odomMsg->twist.twist.angular.y = data.imu_angular_vel[1];
-        odomMsg->twist.twist.angular.z = data.imu_angular_vel[2];
+        odomMsg.pose.pose = poseMsg.pose;
+        odomMsg.twist.twist.linear.x = data.vel_imu_wrt_vio[0];
+        odomMsg.twist.twist.linear.y = data.vel_imu_wrt_vio[1];
+        odomMsg.twist.twist.linear.z = data.vel_imu_wrt_vio[2];
+        odomMsg.twist.twist.angular.x = data.imu_angular_vel[0];
+        odomMsg.twist.twist.angular.y = data.imu_angular_vel[1];
+        odomMsg.twist.twist.angular.z = data.imu_angular_vel[2];
 
-        odomPublisher.publish(*odomMsg);
+        odomPublisher.publish(odomMsg);
     }
 
     return;
