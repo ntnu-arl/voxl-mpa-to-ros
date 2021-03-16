@@ -47,23 +47,21 @@ StereoInterface::StereoInterface(
     GenericInterface(rosNodeHandle, baseChannel, NUM_STEREO_REQUIRED_CHANNELS, camName)
 {
 
-    char frameName[64];
-
-    sprintf(frameName, "%s/left", m_pipeName);
-    m_imageMsgL = new sensor_msgs::Image;
-    m_imageMsgL->header.frame_id = frameName;
-    m_imageMsgL->is_bigendian    = false;
-
-    sprintf(frameName, "%s/right", m_pipeName);
-    m_imageMsgR = new sensor_msgs::Image;
-    m_imageMsgR->header.frame_id = frameName;
-    m_imageMsgR->is_bigendian    = false;
-
     pipe_client_set_camera_helper_cb(m_baseChannel, _frame_cb, this);
 
 }
 
 void StereoInterface::AdvertiseTopics(){
+
+    char frameName[64];
+
+    sprintf(frameName, "%s/left", m_pipeName);
+    m_imageMsgL.header.frame_id = frameName;
+    m_imageMsgL.is_bigendian    = false;
+
+    sprintf(frameName, "%s/right", m_pipeName);
+    m_imageMsgR.header.frame_id = frameName;
+    m_imageMsgR.is_bigendian    = false;
 
     image_transport::ImageTransport it(m_rosNodeHandle);
 
@@ -104,9 +102,6 @@ void StereoInterface::Clean(){
     m_rosImagePublisherL.shutdown();
     m_rosImagePublisherR.shutdown();
 
-    delete m_imageMsgL;
-    delete m_imageMsgR;
-
     m_state = ST_CLEAN;
 
 }
@@ -134,31 +129,31 @@ static void _frame_cb(
     }
 
     image_transport::Publisher publisherL = interface->GetPublisherL();
-    sensor_msgs::Image* imgL = interface->GetImageMsgL();
+    sensor_msgs::Image imgL = interface->GetImageMsgL();
 
     image_transport::Publisher publisherR = interface->GetPublisherR();
-    sensor_msgs::Image* imgR = interface->GetImageMsgR();
+    sensor_msgs::Image imgR = interface->GetImageMsgR();
 
-    imgL->header.stamp.fromNSec(meta.timestamp_ns);
-    imgL->width    = meta.width;
-    imgL->height   = meta.height;
-    imgL->step     = meta.width;
-    imgL->encoding = GetRosFormat(meta.format);
+    imgL.header.stamp.fromNSec(meta.timestamp_ns);
+    imgL.width    = meta.width;
+    imgL.height   = meta.height;
+    imgL.step     = meta.width;
+    imgL.encoding = GetRosFormat(meta.format);
 
-    imgR->header.stamp.fromNSec(meta.timestamp_ns);
-    imgR->width    = meta.width;
-    imgR->height   = meta.height;
-    imgR->step     = meta.width;
-    imgR->encoding = GetRosFormat(meta.format);
+    imgR.header.stamp.fromNSec(meta.timestamp_ns);
+    imgR.width    = meta.width;
+    imgR.height   = meta.height;
+    imgR.step     = meta.width;
+    imgR.encoding = GetRosFormat(meta.format);
 
-    int dataSize = imgL->step * imgL->height;
+    int dataSize = imgL.step * imgL.height;
 
-    imgL->data.resize(dataSize);
-    imgR->data.resize(dataSize);
+    imgL.data.resize(dataSize);
+    imgR.data.resize(dataSize);
 
-    memcpy(&(imgL->data[0]), frame, dataSize);
-    memcpy(&(imgR->data[0]), &frame[dataSize], dataSize);
+    memcpy(&(imgL.data[0]), frame, dataSize);
+    memcpy(&(imgR.data[0]), &frame[dataSize], dataSize);
 
-    publisherL.publish(*imgL);
-    publisherR.publish(*imgR);
+    publisherL.publish(imgL);
+    publisherR.publish(imgR);
 }

@@ -69,7 +69,7 @@ include_directories(
   ./include/utils
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -pthread -Wall -L${CMAKE_CURRENT_SOURCE_DIR}/lib/tof -L/${CMAKE_CURRENT_SOURCE_DIR}/lib/pmd")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -pthread -Wall -fpermissive")
 
 file(GLOB interfaces CONFIGURE_DEPENDS "src/interfaces/*_interface.cpp")
 file(GLOB utils CONFIGURE_DEPENDS "src/utils/*.cpp")

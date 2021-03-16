@@ -43,17 +43,19 @@
 
 //Any additional potential interfaces should be added here, see 
 //potentialInterface struct for reference
-#define NUM_POTENTIAL_INTERFACES 6
+#define NUM_POTENTIAL_INTERFACES 9
 #define POTENTIAL_INTERFACES {\
-    {"tracking_pipe", "tracking_publish", INT_CAMERA}, \
-    {"stereo_pipe",   "stereo_publish",   INT_STEREO}, \
-    {"imu0_pipe",     "imu0_publish",     INT_IMU},    \
-    {"imu1_pipe",     "imu1_publish",     INT_IMU},    \
-    {"vio0_pipe",     "vio0_publish",     INT_VIO},    \
-    {"vio1_pipe",     "vio1_publish",     INT_VIO}     \
+    {"tracking0_pipe", "tracking0_publish", INT_CAMERA}, \
+    {"tracking1_pipe", "tracking1_publish", INT_CAMERA}, \
+    {"stereo_pipe",    "stereo_publish",    INT_STEREO}, \
+    {"hires_pipe",     "hires_publish",     INT_CAMERA}, \
+    {"tof_pipe",       "tof_publish",       INT_TOF},    \
+    {"imu0_pipe",      "imu0_publish",      INT_IMU},    \
+    {"imu1_pipe",      "imu1_publish",      INT_IMU},    \
+    {"vio0_pipe",      "vio0_publish",      INT_VIO},    \
+    {"vio1_pipe",      "vio1_publish",      INT_VIO}     \
     }
 
-    //{"tof_pipe",      "tof_publish",      INT_TOF},     
 
 
 InterfaceManager *manager = NULL;
@@ -91,9 +93,9 @@ int MainEnter(int argc, char **argv, ros::NodeHandle nh){
                 case INT_STEREO:
                     interfaces[numInterfaces] = new StereoInterface(nh, channel, pipeName.c_str());
                     break;
-                /*case INT_TOF:
+                case INT_TOF:
                     interfaces[numInterfaces] = new TofInterface(nh, channel, pipeName.c_str());
-                    break;*/
+                    break;
                 case INT_IMU:
                     interfaces[numInterfaces] = new IMUInterface(nh, channel, pipeName.c_str());
                     break;

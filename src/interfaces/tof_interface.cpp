@@ -35,11 +35,13 @@
 #include "tof_interface.h"
 #include "camera_helpers.h"
 
-static void _IR_frame_cb(
-    __attribute__((unused)) int ch,
-                            camera_image_metadata_t meta, 
-                            char* frame, 
-                            void* context);
+#define NUM_PC_CHANNELS 6
+
+static void _helper_cb(
+    __attribute__((unused))int ch, 
+                           char* data, 
+                           int bytes, 
+                           void* context);
 
 TofInterface::TofInterface(
     ros::NodeHandle rosNodeHandle,
@@ -47,15 +49,51 @@ TofInterface::TofInterface(
     const char *    camName) :
     GenericInterface(rosNodeHandle, baseChannel, NUM_TOF_REQUIRED_CHANNELS, camName)
 {
+    int format;
 
-    sprintf(m_baseName, "%.*s", (strlen(m_pipeName) - strlen("_pc")), m_pipeName);
-    sprintf(m_irName, "%s_ir", m_baseName);
+    m_rosNodeHandle.param<int>(("tof_cutoff"), m_pcConfThreshold, 0);
 
-    m_irImageMsg = new sensor_msgs::Image;
-    m_irImageMsg->header.frame_id = m_baseName;
-    m_irImageMsg->is_bigendian    = false;
+    format = IMAGE_FORMAT_RAW8;
+    m_irImageMsg.header.frame_id = m_pipeName;
+    m_irImageMsg.is_bigendian    = false;
+    m_irImageMsg.encoding        = GetRosFormat(format);
+    m_irImageMsg.width           = MPA_TOF_WIDTH;
+    m_irImageMsg.height          = MPA_TOF_HEIGHT;
+    m_irImageMsg.step            = MPA_TOF_WIDTH * GetStepSize(format);
+    m_irImageMsg.data.resize(m_irImageMsg.step * m_irImageMsg.height);
+    
+    format = IMAGE_FORMAT_FLOAT32;
+    m_depthImageMsg.header.frame_id = m_pipeName;
+    m_depthImageMsg.is_bigendian    = false;
+    m_depthImageMsg.encoding        = GetRosFormat(format);
+    m_depthImageMsg.width           = MPA_TOF_WIDTH;
+    m_depthImageMsg.height          = MPA_TOF_HEIGHT;
+    m_depthImageMsg.step            = MPA_TOF_WIDTH * GetStepSize(format);
+    m_depthImageMsg.data.resize(m_depthImageMsg.step * m_depthImageMsg.height);
 
-    pipe_client_set_camera_helper_cb(TOF_IR_CHANNEL, _IR_frame_cb, this);
+    format = IMAGE_FORMAT_RAW8;
+    m_confImageMsg.header.frame_id = m_pipeName;
+    m_confImageMsg.is_bigendian    = false;
+    m_confImageMsg.encoding        = GetRosFormat(format);
+    m_confImageMsg.width           = MPA_TOF_WIDTH;
+    m_confImageMsg.height          = MPA_TOF_HEIGHT;
+    m_confImageMsg.step            = MPA_TOF_WIDTH * GetStepSize(format);
+    m_confImageMsg.data.resize(m_confImageMsg.step * m_confImageMsg.height);
+
+    format = IMAGE_FORMAT_FLOAT32;
+    m_noiseImageMsg.header.frame_id = m_pipeName;
+    m_noiseImageMsg.is_bigendian    = false;
+    m_noiseImageMsg.encoding        = GetRosFormat(format);
+    m_noiseImageMsg.width           = MPA_TOF_WIDTH;
+    m_noiseImageMsg.height          = MPA_TOF_HEIGHT;
+    m_noiseImageMsg.step            = MPA_TOF_WIDTH * GetStepSize(format);
+    m_noiseImageMsg.data.resize(m_noiseImageMsg.step * m_noiseImageMsg.height);
+
+    // these two are a little more complicated so they're in their own functions
+    // for cleanliness
+    InitializePointCloudMessage("map");
+
+    pipe_client_set_simple_helper_cb(m_baseChannel, _helper_cb, this);
 
 }
 
@@ -65,8 +103,21 @@ void TofInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s", m_irName);
-    m_irImagePublisher = it.advertiseCamera(topicName, 1);
+    sprintf(topicName, "/%s/ir", m_pipeName);
+    m_irImagePublisher    = it.advertiseCamera(topicName, 1);
+
+    sprintf(topicName, "/%s/depth", m_pipeName);
+    m_depthImagePublisher = it.advertiseCamera(topicName, 1);
+
+    sprintf(topicName, "/%s/confidence", m_pipeName);
+    m_confImagePublisher  = it.advertiseCamera(topicName, 1);
+
+    sprintf(topicName, "/%s/noise", m_pipeName);
+    m_noiseImagePublisher = it.advertiseCamera(topicName, 1);
+
+    sprintf(topicName, "/%s/point_cloud", m_pipeName);
+    m_pcPublisher         = m_rosNodeHandle.advertise<sensor_msgs::PointCloud2>
+                                (topicName, NUM_PC_CHANNELS);
 
     m_state = ST_AD;
 
@@ -74,21 +125,21 @@ void TofInterface::AdvertiseTopics(){
 void TofInterface::StartPublishing(){
 
     char fullName[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_client_construct_full_path(m_irName, fullName);
+    pipe_client_construct_full_path(m_pipeName, fullName);
 
-    if(pipe_client_init_channel(TOF_IR_CHANNEL, fullName, PIPE_CLIENT_NAME,
-                EN_PIPE_CLIENT_CAMERA_HELPER, 0)){
+    if(pipe_client_init_channel(m_baseChannel, fullName, PIPE_CLIENT_NAME,
+                EN_PIPE_CLIENT_SIMPLE_HELPER, TOF_RECOMMENDED_READ_BUF_SIZE)){
         printf("Error opening pipe: %s\n", m_pipeName);
-        return;
+    } else {
+        pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
+        InitializeCameraInfoMessage("map");
+        m_state = ST_RUNNING;
     }
-
-    InitializeCameraInfoMessage();
-    m_state = ST_RUNNING;
 
 }
 void TofInterface::StopPublishing(){
 
-    pipe_client_close_channel(TOF_IR_CHANNEL);
+    pipe_client_close_channel(m_baseChannel);
     m_state = ST_AD;
 
 }
@@ -96,24 +147,36 @@ void TofInterface::StopPublishing(){
 void TofInterface::Clean(){
 
     m_irImagePublisher.shutdown();
-    delete m_irImageMsg;
+
+    m_depthImagePublisher.shutdown();
+
+    m_confImagePublisher.shutdown();
+
+    m_noiseImagePublisher.shutdown();
+
+    m_pcPublisher.shutdown();
+
     m_state = ST_CLEAN;
 
 }
 
 int TofInterface::GetNumClients(){
-    return m_irImagePublisher.getNumSubscribers();
+    return m_irImagePublisher.   getNumSubscribers() +
+           m_depthImagePublisher.getNumSubscribers() +
+           m_confImagePublisher. getNumSubscribers() +
+           m_noiseImagePublisher.getNumSubscribers() +
+           m_pcPublisher.        getNumSubscribers();
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------
 // Initialize camera info message
 // -----------------------------------------------------------------------------------------------------------------------------
-void TofInterface::InitializeCameraInfoMessage()
+void TofInterface::InitializeCameraInfoMessage(const char *frame_id)
 {
 
     char infoString[512];
-    if(pipe_client_get_info_string(TOF_IR_CHANNEL, infoString, 512) < 0) {
-        printf("Error getting tof camera info on channel: %d!\n", TOF_IR_CHANNEL);
+    if(pipe_client_get_info_string(m_baseChannel, infoString, 512) < 0) {
+        printf("Error getting tof camera info on channel: %d!\n", m_baseChannel);
         return;
     }
 
@@ -143,16 +206,16 @@ void TofInterface::InitializeCameraInfoMessage()
     // and principle point reflected over the center of the image
     if(FLIPIMAGE)
     {
-        px   = TofImageWidth  - px;
-        py   = TofImageHeight - py;
+        px    = TofImageWidth  - px;
+        py    = TofImageHeight - py;
         tan0 *= -1.0;
         tan1 *= -1.0;
     }
 
     // populate cameraInfoMsg for ROS
-    m_cameraInfoMsg.header.frame_id = m_baseName;
-    m_cameraInfoMsg.width           = 224;
-    m_cameraInfoMsg.height          = 172;
+    m_cameraInfoMsg.header.frame_id = frame_id;
+    m_cameraInfoMsg.width           = MPA_TOF_WIDTH;
+    m_cameraInfoMsg.height          = MPA_TOF_HEIGHT;
 
     // distortion parameters. 5-param radtan model identical to factory sensor cal
     m_cameraInfoMsg.distortion_model = "plumb_bob";
@@ -200,84 +263,130 @@ void TofInterface::InitializeCameraInfoMessage()
     m_cameraInfoMsg.P[11] = 0;
 }
 
-// IR helper callback whenever a frame arrives
-static void _IR_frame_cb(
-    __attribute__((unused)) int ch,
-                            camera_image_metadata_t meta, 
-                            char* frame, 
-                            void* context)
+// -----------------------------------------------------------------------------------------------------------------------------
+// Initialize point cloud message
+// -----------------------------------------------------------------------------------------------------------------------------
+void TofInterface::InitializePointCloudMessage(const char *frame_id)
+{
+    m_pcMsg.header.frame_id = frame_id;
+    m_pcMsg.width           = MPA_TOF_WIDTH;
+    m_pcMsg.height          = MPA_TOF_HEIGHT;
+
+    m_pcMsg.is_bigendian = false;
+    // Data is not "dense" since not all points are valid.
+    m_pcMsg.is_dense     = false;
+
+    // The total size of the channels of the point cloud for a single point are:
+    // sizeof(float) * 3 = x, y, and z
+    // sizeof(float) = noise
+    // sizeof(uint32_t) = depthConfidence (only the low byte is defined, using uin32_t for alignment)
+    m_pcMsg.point_step = (sizeof(float) * 3) + sizeof(float) + sizeof(uint8_t) + sizeof(uint8_t);
+    m_pcMsg.row_step   = 1;
+
+    // Describe the fields (channels) associated with each point.
+    m_pcMsg.fields.resize(NUM_PC_CHANNELS);
+    m_pcMsg.fields[0].name = "x";
+    m_pcMsg.fields[1].name = "y";
+    m_pcMsg.fields[2].name = "z";
+    m_pcMsg.fields[3].name = "noise";
+    m_pcMsg.fields[4].name = "confidence";
+    m_pcMsg.fields[5].name = "intensity";
+
+    // Defines the format of x, y, z, and noise channels.
+    int index;
+
+    for (index = 0; index < 4; index++)
+    {
+        m_pcMsg.fields[index].offset = sizeof(float) * index;
+        m_pcMsg.fields[index].datatype = sensor_msgs::PointField::FLOAT32;
+        m_pcMsg.fields[index].count = 1;
+    }
+
+    // Defines the format of the depthConfidence channel.
+    m_pcMsg.fields[4].offset   = m_pcMsg.fields[3].offset + sizeof(float);
+    m_pcMsg.fields[4].datatype = sensor_msgs::PointField::UINT8;
+    m_pcMsg.fields[4].count    = 1;
+
+    m_pcMsg.fields[5].offset   = m_pcMsg.fields[4].offset + sizeof(uint8_t);
+    m_pcMsg.fields[5].datatype = sensor_msgs::PointField::UINT8;
+    m_pcMsg.fields[5].count    = 1;
+
+    m_pcMsg.row_step = m_pcMsg.point_step * m_pcMsg.width;
+    m_pcMsg.data.resize(m_pcMsg.height * m_pcMsg.row_step);
+
+}
+
+
+// called when the simple helper has data for us
+static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, void* context)
 {
 
-    TofInterface *interface = (TofInterface *) context;
-    image_transport::CameraPublisher publisher = interface->GetIRPublisher();
-    sensor_msgs::Image* img = interface->GetIRMsg();
-
-    img->header.stamp.fromNSec(meta.timestamp_ns);
-    img->width    = meta.width;
-    img->height   = meta.height;
-    img->step     = meta.width * GetStepSize(meta.format);
-    img->encoding = GetRosFormat(meta.format);
-
-    int dataSize = img->step * img->height;
-
-    img->data.resize(dataSize);
-
-    memcpy(&(img->data[0]), frame, dataSize);
-
-    publisher.publish(*img, interface->GetCamInfo());
-}
-/*
-// noise helper callback whenever a frame arrives
-static void _noise_frame_cb(
-    __attribute__((unused)) int ch,
-                            camera_image_metadata_t meta, 
-                            char* frame, 
-                            void* context)
-{
+    // validate that the data makes sense
+    int n_packets;
+    tof_data_t* data_array = modal_tof_validate_pipe_data(data, bytes, &n_packets);
+    if(data_array == NULL) return;
 
     TofInterface *interface = (TofInterface *) context;
-    image_transport::CameraPublisher publisher = interface->GetIRPublisher();
-    sensor_msgs::Image* img = interface->GetIRMsg();
 
-    img->header.stamp.fromNSec(meta.timestamp_ns);
-    img->width    = meta.width;
-    img->height   = meta.height;
-    img->step     = meta.width * GetStepSize(meta.format);
-    img->encoding = GetRosFormat(meta.format);
+    if(interface->GetState() != ST_RUNNING) return;
 
-    int dataSize = img->step * img->height;
+    sensor_msgs::CameraInfo          cameraInfoMsg =         interface->GetCamInfo();
 
-    img->data.resize(dataSize);
+    sensor_msgs::Image               irImageMsg =            interface->GetIRMsg();
+    image_transport::CameraPublisher irImagePublisher =      interface->GetIRPublisher();
 
-    memcpy(&(img->data[0]), frame, dataSize);
+    sensor_msgs::Image               depthImageMsg =         interface->GetDepthMsg();
+    image_transport::CameraPublisher depthImagePublisher =   interface->GetDepthPublisher();
 
-    publisher.publish(*img, interface->GetCamInfo());
+    sensor_msgs::Image               confImageMsg =          interface->GetConfMsg();
+    image_transport::CameraPublisher confImagePublisher =    interface->GetConfPublisher();
+
+    sensor_msgs::Image               noiseImageMsg =         interface->GetNoiseMsg();
+    image_transport::CameraPublisher noiseImagePublisher =   interface->GetNoisePublisher();
+
+    sensor_msgs::PointCloud2         pcMsg =                 interface->GetPCMsg();
+    ros::Publisher                   pcPublisher =           interface->GetPCPublisher();
+
+    int cutoff = interface->m_pcConfThreshold;
+
+    for(int i=0;i<n_packets;i++){
+
+        tof_data_t data = data_array[i];
+
+        int64_t timestamp = data.timestamp_ns;
+        irImageMsg    .header.stamp.fromNSec(timestamp);
+        depthImageMsg .header.stamp.fromNSec(timestamp);
+        confImageMsg  .header.stamp.fromNSec(timestamp);
+        noiseImageMsg .header.stamp.fromNSec(timestamp);
+        pcMsg         .header.stamp.fromNSec(timestamp);
+
+        memcpy(&(irImageMsg   .data[0]), &(data.grayValues[0]),  irImageMsg.step    * irImageMsg.height);
+        memcpy(&(confImageMsg .data[0]), &(data.confidences[0]), confImageMsg.step  * confImageMsg.height);
+        memcpy(&(noiseImageMsg.data[0]), &(data.noises[0]),      noiseImageMsg.step * noiseImageMsg.height);
+
+        for(int i = 0; i < MPA_TOF_SIZE; i++){
+
+            *((float *)&(depthImageMsg.data[i * sizeof(float)])) = data.points[i][2];
+
+            if(data.confidences[i] > cutoff){
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[0].offset])) = data.points     [i][0];
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[1].offset])) = data.points     [i][1];
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[2].offset])) = data.points     [i][2];
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[3].offset])) = data.noises     [i];
+                pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[4].offset] = data.confidences[i];
+                pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[5].offset] = data.grayValues [i];
+            }
+
+        }
+
+        irImagePublisher   .publish(irImageMsg,    cameraInfoMsg);
+        confImagePublisher .publish(confImageMsg,  cameraInfoMsg);
+        noiseImagePublisher.publish(noiseImageMsg, cameraInfoMsg);
+
+        depthImagePublisher.publish(depthImageMsg, cameraInfoMsg);
+        pcPublisher        .publish(pcMsg);
+
+    }
+
+    return;
 }
-
-// confidence helper callback whenever a frame arrives
-static void _conf_frame_cb(
-    __attribute__((unused)) int ch,
-                            camera_image_metadata_t meta, 
-                            char* frame, 
-                            void* context)
-{
-
-    TofInterface *interface = (TofInterface *) context;
-    image_transport::CameraPublisher publisher = interface->GetIRPublisher();
-    sensor_msgs::Image* img = interface->GetIRMsg();
-
-    img->header.stamp.fromNSec(meta.timestamp_ns);
-    img->width    = meta.width;
-    img->height   = meta.height;
-    img->step     = meta.width * GetStepSize(meta.format);
-    img->encoding = GetRosFormat(meta.format);
-
-    int dataSize = img->step * img->height;
-
-    img->data.resize(dataSize);
-
-    memcpy(&(img->data[0]), frame, dataSize);
-
-    publisher.publish(*img, interface->GetCamInfo());
-}
-*/

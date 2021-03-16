@@ -10,53 +10,71 @@
 
 <launch>
 
+    <!-- This parameter will remove tof points with lower confidence than the given value
+         Confidence values range from 0-255 -->
+    <arg name="tof_cutoff" default="100"         />
+
     <!-- sample interface variables, specify whether to publish, and the pipe to look for -->
-    <arg name="tracking_publish" default="true"    />
-    <arg name="tracking_pipe"    default="tracking"/>
+    <arg name="tracking0_publish" default="true"         />
+    <arg name="tracking0_pipe"    default="tracking"     />
 
-    <arg name="stereo_publish"   default="true"    />
-    <arg name="stereo_pipe"      default="stereo"  />
+    <arg name="tracking1_publish" default="false"         />
+    <arg name="tracking1_pipe"    default=""     />
 
-    <arg name="imu0_publish"     default="true"    />
-    <arg name="imu0_pipe"        default="imu0"    />
+    <arg name="stereo_publish"    default="true"         />
+    <arg name="stereo_pipe"       default="stereo"       />
 
-    <arg name="imu1_publish"     default="true"    />
-    <arg name="imu1_pipe"        default="imu1"    />
+    <arg name="hires_publish"     default="true"         />
+    <arg name="hires_pipe"        default="hires_preview"/>
 
-    <arg name="vio0_publish"     default="true"    />
-    <arg name="vio0_pipe"        default="qvio"    />
+    <arg name="tof_publish"       default="true"         />
+    <arg name="tof_pipe"          default="tof"          />
 
-    <arg name="vio1_publish"     default="false"   />
-    <arg name="vio1_pipe"        default=""        />
+    <arg name="imu0_publish"      default="true"         />
+    <arg name="imu0_pipe"         default="imu0"         />
 
-    <!-- Tof is not currently supported, look for it in a future release
-    <arg name="tof_publish"      default="false"    />
-    <arg name="tof_pipe"         default="tof_pc"  />
-    -->
+    <arg name="imu1_publish"      default="true"         />
+    <arg name="imu1_pipe"         default="imu1"         />
+
+    <arg name="vio0_publish"      default="true"         />
+    <arg name="vio0_pipe"         default="qvio"         />
+
+    <arg name="vio1_publish"      default="false"        />
+    <arg name="vio1_pipe"         default=""             />
+   
     <arg name="namespace" default="mpa" />
     <!-- start mpa node with all arguments -->
     <group ns="$(arg namespace)">
         <node name="voxl_mpa_to_ros_node" type="voxl_mpa_to_ros_node" pkg="voxl_mpa_to_ros" output="screen">
-            <param name="tracking_publish" value="$(arg tracking_publish)" />
-            <param name="tracking_pipe"    value="$(arg tracking_pipe)"    />
 
-            <param name="stereo_publish"   value="$(arg stereo_publish)"   />
-            <param name="stereo_pipe"      value="$(arg stereo_pipe)"      />
-<!--
-            <param name="tof_publish"      value="$(arg tof_publish)"      />
-            <param name="tof_pipe"         value="$(arg tof_pipe)"         />
--->
-            <param name="imu0_publish"     value="$(arg imu0_publish)"     />
-            <param name="imu0_pipe"        value="$(arg imu0_pipe)"        />
+            <param name="tof_cutoff" value="$(arg tof_cutoff)" />
 
-            <param name="imu1_publish"     value="$(arg imu1_publish)"     />
-            <param name="imu1_pipe"        value="$(arg imu1_pipe)"        />
--->
-            <param name="vio0_publish"     value="$(arg vio0_publish)"     />
-            <param name="vio0_pipe"        value="$(arg vio0_pipe)"        />
+            <param name="tracking0_publish" value="$(arg tracking0_publish)" />
+            <param name="tracking0_pipe"    value="$(arg tracking0_pipe)"    />
 
-            <param name="vio1_publish"     value="$(arg vio1_publish)"     />
-            <param name="vio1_pipe"        value="$(arg vio1_pipe)"        />
+            <param name="tracking1_publish" value="$(arg tracking1_publish)" />
+            <param name="tracking1_pipe"    value="$(arg tracking1_pipe)"    />
+
+            <param name="stereo_publish"    value="$(arg stereo_publish)"    />
+            <param name="stereo_pipe"       value="$(arg stereo_pipe)"       />
+
+            <param name="hires_publish"     value="$(arg hires_publish)"     />
+            <param name="hires_pipe"        value="$(arg hires_pipe)"        />
+
+            <param name="tof_publish"       value="$(arg tof_publish)"       />
+            <param name="tof_pipe"          value="$(arg tof_pipe)"          />
+
+            <param name="imu0_publish"      value="$(arg imu0_publish)"      />
+            <param name="imu0_pipe"         value="$(arg imu0_pipe)"         />
+
+            <param name="imu1_publish"      value="$(arg imu1_publish)"      />
+            <param name="imu1_pipe"         value="$(arg imu1_pipe)"         />
+
+            <param name="vio0_publish"      value="$(arg vio0_publish)"      />
+            <param name="vio0_pipe"         value="$(arg vio0_pipe)"         />
+
+            <param name="vio1_publish"      value="$(arg vio1_publish)"      />
+            <param name="vio1_pipe"         value="$(arg vio1_pipe)"         />
 
             
         </node>

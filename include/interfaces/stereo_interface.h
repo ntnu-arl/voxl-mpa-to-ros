@@ -59,10 +59,10 @@ public:
     void StopPublishing();
     void Clean();
 
-    sensor_msgs::Image* GetImageMsgL(){
+    sensor_msgs::Image GetImageMsgL(){
         return m_imageMsgL;
     }
-    sensor_msgs::Image* GetImageMsgR(){
+    sensor_msgs::Image GetImageMsgR(){
         return m_imageMsgR;
     }
 
@@ -75,10 +75,10 @@ public:
 
 private:
 
-    sensor_msgs::Image*                    m_imageMsgL;                   ///< Image message
+    sensor_msgs::Image                     m_imageMsgL;                   ///< Image message
     image_transport::Publisher             m_rosImagePublisherL;          ///< Image publisher
 
-    sensor_msgs::Image*                    m_imageMsgR;                   ///< Image message
+    sensor_msgs::Image                     m_imageMsgR;                   ///< Image message
     image_transport::Publisher             m_rosImagePublisherR;          ///< Image publisher
 
 };
