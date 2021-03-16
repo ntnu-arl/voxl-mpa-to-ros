@@ -56,7 +56,7 @@ public:
     void StopPublishing();
     void Clean();
 
-    sensor_msgs::Imu* GetImuMsg(){
+    sensor_msgs::Imu GetImuMsg(){
         return m_imuMsg;
     }
 
@@ -66,7 +66,7 @@ public:
 
 private:
 
-    sensor_msgs::Imu*              m_imuMsg;                   ///< Image message
+    sensor_msgs::Imu               m_imuMsg;                   ///< Image message
     ros::Publisher                 m_rosPublisher;          ///< Image publisher
 
 };

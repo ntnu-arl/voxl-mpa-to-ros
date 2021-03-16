@@ -46,18 +46,16 @@ IMUInterface::IMUInterface(
     GenericInterface(rosNodeHandle, baseChannel, NUM_IMU_REQUIRED_CHANNELS, name)
 {
 
-    m_imuMsg = new sensor_msgs::Imu;
-    m_imuMsg->header.frame_id = "map";
-    m_imuMsg->orientation.x = 0;
-    m_imuMsg->orientation.y = 0;
-    m_imuMsg->orientation.z = 0;
-    m_imuMsg->orientation.w = 0;
-    m_imuMsg->orientation_covariance         = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0};
-    m_imuMsg->angular_velocity_covariance    = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    m_imuMsg->linear_acceleration_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    m_imuMsg.header.frame_id = "map";
+    m_imuMsg.orientation.x = 0;
+    m_imuMsg.orientation.y = 0;
+    m_imuMsg.orientation.z = 0;
+    m_imuMsg.orientation.w = 0;
+    m_imuMsg.orientation_covariance         = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0};
+    m_imuMsg.angular_velocity_covariance    = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    m_imuMsg.linear_acceleration_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
 
     pipe_client_set_simple_helper_cb(m_baseChannel, _helper_cb, this);
-
 
 }
 
@@ -95,7 +93,7 @@ void IMUInterface::StopPublishing(){
 void IMUInterface::Clean(){
 
     m_rosPublisher.shutdown();
-    delete m_imuMsg;
+
     m_state = ST_CLEAN;
 
 }
@@ -115,22 +113,24 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
     IMUInterface *interface = (IMUInterface *) context;
     ros::Publisher publisher = interface->GetPublisher();
-    sensor_msgs::Imu* imu = interface->GetImuMsg();
+    sensor_msgs::Imu imu = interface->GetImuMsg();
 
     // make a new data struct to hold the average
     imu_data_t avg;
     memset(&avg,0,sizeof(avg));
 
-    // sum all the samples
+    //publish all the samples
     for(int i=0;i<n_packets;i++){
-        imu->header.stamp.fromNSec(data_array[i].timestamp_ns);
-        imu->angular_velocity.x = data_array[i].gyro_rad[0];
-        imu->angular_velocity.y = data_array[i].gyro_rad[1];
-        imu->angular_velocity.z = data_array[i].gyro_rad[2];
-        imu->linear_acceleration.x = data_array[i].accl_ms2[0];
-        imu->linear_acceleration.y = data_array[i].accl_ms2[1];
-        imu->linear_acceleration.z = data_array[i].accl_ms2[2];
-        publisher.publish(*imu);
+
+        imu.header.stamp.fromNSec(data_array[i].timestamp_ns);
+        imu.angular_velocity.x = data_array[i].gyro_rad[0];
+        imu.angular_velocity.y = data_array[i].gyro_rad[1];
+        imu.angular_velocity.z = data_array[i].gyro_rad[2];
+        imu.linear_acceleration.x = data_array[i].accl_ms2[0];
+        imu.linear_acceleration.y = data_array[i].accl_ms2[1];
+        imu.linear_acceleration.z = data_array[i].accl_ms2[2];
+
+        publisher.publish(imu);
 
     }
 

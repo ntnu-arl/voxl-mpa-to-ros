@@ -57,10 +57,10 @@ public:
     void StopPublishing();
     void Clean();
 
-    geometry_msgs::PoseStamped* GetPoseMsg(){
+    geometry_msgs::PoseStamped GetPoseMsg(){
         return m_poseMsg;
     }
-    nav_msgs::Odometry* GetOdometryMsg(){
+    nav_msgs::Odometry GetOdometryMsg(){
         return m_odomMsg;
     }
 
@@ -73,8 +73,8 @@ public:
 
 private:
 
-    geometry_msgs::PoseStamped*          m_poseMsg;                    ///< Image message
-    nav_msgs::Odometry*                  m_odomMsg;                    ///< Image message
+    geometry_msgs::PoseStamped           m_poseMsg;                    ///< Image message
+    nav_msgs::Odometry                   m_odomMsg;                    ///< Image message
 
     ros::Publisher                       m_posePublisher;              ///< Image publisher
     ros::Publisher                       m_odomPublisher;              ///< Image publisher
