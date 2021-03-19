@@ -15,17 +15,26 @@
     <arg name="tof_cutoff" default="100"         />
 
     <!-- sample interface variables, specify whether to publish, and the pipe to look for -->
-    <arg name="tracking0_publish" default="true"         />
-    <arg name="tracking0_pipe"    default="tracking"     />
+    <arg name="image0_publish" default="true"            />
+    <arg name="image0_pipe"    default="tracking"        />
 
-    <arg name="tracking1_publish" default="false"         />
-    <arg name="tracking1_pipe"    default=""     />
+    <arg name="image1_publish" default="true"            />
+    <arg name="image1_pipe"    default="hires_preview"   />
+
+    <arg name="image2_publish" default="true"            />
+    <arg name="image2_pipe"    default="qvio_overlay"    />
+
+    <arg name="image3_publish" default="false"           />
+    <arg name="image3_pipe"    default=""                />
+
+    <arg name="image4_publish" default="false"           />
+    <arg name="image4_pipe"    default=""                />
+
+    <arg name="image5_publish" default="false"           />
+    <arg name="image5_pipe"    default=""                />
 
     <arg name="stereo_publish"    default="true"         />
     <arg name="stereo_pipe"       default="stereo"       />
-
-    <arg name="hires_publish"     default="true"         />
-    <arg name="hires_pipe"        default="hires_preview"/>
 
     <arg name="tof_publish"       default="true"         />
     <arg name="tof_pipe"          default="tof"          />
@@ -49,17 +58,26 @@
 
             <param name="tof_cutoff" value="$(arg tof_cutoff)" />
 
-            <param name="tracking0_publish" value="$(arg tracking0_publish)" />
-            <param name="tracking0_pipe"    value="$(arg tracking0_pipe)"    />
+            <param name="image0_publish"    value="$(arg image0_publish)"    />
+            <param name="image0_pipe"       value="$(arg image0_pipe)"       />
 
-            <param name="tracking1_publish" value="$(arg tracking1_publish)" />
-            <param name="tracking1_pipe"    value="$(arg tracking1_pipe)"    />
+            <param name="image1_publish"    value="$(arg image1_publish)"    />
+            <param name="image1_pipe"       value="$(arg image1_pipe)"       />
+
+            <param name="image2_publish"    value="$(arg image2_publish)"    />
+            <param name="image2_pipe"       value="$(arg image2_pipe)"       />
+
+            <param name="image3_publish"    value="$(arg image3_publish)"    />
+            <param name="image3_pipe"       value="$(arg image3_pipe)"       />
+
+            <param name="image4_publish"    value="$(arg image4_publish)"    />
+            <param name="image4_pipe"       value="$(arg image4_pipe)"       />
+
+            <param name="image5_publish"    value="$(arg image5_publish)"    />
+            <param name="image5_pipe"       value="$(arg image5_pipe)"       />
 
             <param name="stereo_publish"    value="$(arg stereo_publish)"    />
             <param name="stereo_pipe"       value="$(arg stereo_pipe)"       />
-
-            <param name="hires_publish"     value="$(arg hires_publish)"     />
-            <param name="hires_pipe"        value="$(arg hires_pipe)"        />
 
             <param name="tof_publish"       value="$(arg tof_publish)"       />
             <param name="tof_pipe"          value="$(arg tof_pipe)"          />

@@ -43,12 +43,15 @@
 
 //Any additional potential interfaces should be added here, see 
 //potentialInterface struct for reference
-#define NUM_POTENTIAL_INTERFACES 9
+#define NUM_POTENTIAL_INTERFACES 12
 #define POTENTIAL_INTERFACES {\
-    {"tracking0_pipe", "tracking0_publish", INT_CAMERA}, \
-    {"tracking1_pipe", "tracking1_publish", INT_CAMERA}, \
+    {"image0_pipe",    "image0_publish",    INT_CAMERA}, \
+    {"image1_pipe",    "image1_publish",    INT_CAMERA}, \
+    {"image2_pipe",    "image2_publish",    INT_CAMERA}, \
+    {"image3_pipe",    "image3_publish",    INT_CAMERA}, \
+    {"image4_pipe",    "image4_publish",    INT_CAMERA}, \
+    {"image5_pipe",    "image5_publish",    INT_CAMERA}, \
     {"stereo_pipe",    "stereo_publish",    INT_STEREO}, \
-    {"hires_pipe",     "hires_publish",     INT_CAMERA}, \
     {"tof_pipe",       "tof_publish",       INT_TOF},    \
     {"imu0_pipe",      "imu0_publish",      INT_IMU},    \
     {"imu1_pipe",      "imu1_publish",      INT_IMU},    \
