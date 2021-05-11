@@ -40,13 +40,15 @@
 #include "tof_interface.h"
 #include "imu_interface.h"
 #include "vio_interface.h"
+#include "point_cloud_interface.h"
 
 enum InterfaceType {
     INT_CAMERA,
     INT_STEREO,
     INT_TOF,
     INT_IMU,
-    INT_VIO
+    INT_VIO,
+    INT_PC
 };
 
 #endif

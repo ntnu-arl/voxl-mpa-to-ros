@@ -163,7 +163,7 @@ static void* ThreadManageInterfaces(void *pData){
 static bool pipeExists(const char *pipeName){
 
     char fullPath[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_client_construct_full_path((char *)pipeName, fullPath);
+    pipe_expand_location_string((char *)pipeName, fullPath);
     strcat(fullPath, "request");
 
     return access(fullPath, F_OK) == 0;

@@ -43,17 +43,28 @@
 
 //Any additional potential interfaces should be added here, see 
 //potentialInterface struct for reference
-#define NUM_POTENTIAL_INTERFACES 9
+#define NUM_POTENTIAL_INTERFACES 20
 #define POTENTIAL_INTERFACES {\
-    {"tracking0_pipe", "tracking0_publish", INT_CAMERA}, \
-    {"tracking1_pipe", "tracking1_publish", INT_CAMERA}, \
-    {"stereo_pipe",    "stereo_publish",    INT_STEREO}, \
-    {"hires_pipe",     "hires_publish",     INT_CAMERA}, \
-    {"tof_pipe",       "tof_publish",       INT_TOF},    \
+    {"image0_pipe",    "image0_publish",    INT_CAMERA}, \
+    {"image1_pipe",    "image1_publish",    INT_CAMERA}, \
+    {"image2_pipe",    "image2_publish",    INT_CAMERA}, \
+    {"image3_pipe",    "image3_publish",    INT_CAMERA}, \
+    {"image4_pipe",    "image4_publish",    INT_CAMERA}, \
+    {"image5_pipe",    "image5_publish",    INT_CAMERA}, \
+    {"image6_pipe",    "image6_publish",    INT_CAMERA}, \
+    {"image7_pipe",    "image7_publish",    INT_CAMERA}, \
+    {"stereo0_pipe",   "stereo0_publish",   INT_STEREO}, \
+    {"stereo1_pipe",   "stereo1_publish",   INT_STEREO}, \
+    {"tof0_pipe",      "tof0_publish",      INT_TOF},    \
+    {"tof1_pipe",      "tof1_publish",      INT_TOF},    \
     {"imu0_pipe",      "imu0_publish",      INT_IMU},    \
     {"imu1_pipe",      "imu1_publish",      INT_IMU},    \
     {"vio0_pipe",      "vio0_publish",      INT_VIO},    \
-    {"vio1_pipe",      "vio1_publish",      INT_VIO}     \
+    {"vio1_pipe",      "vio1_publish",      INT_VIO},    \
+    {"PC0_pipe",       "PC0_publish",       INT_PC},     \
+    {"PC1_pipe",       "PC1_publish",       INT_PC},     \
+    {"PC2_pipe",       "PC2_publish",       INT_PC},     \
+    {"PC3_pipe",       "PC3_publish",       INT_PC}      \
     }
 
 
@@ -95,12 +106,16 @@ int MainEnter(int argc, char **argv, ros::NodeHandle nh){
                     break;
                 case INT_TOF:
                     interfaces[numInterfaces] = new TofInterface(nh, channel, pipeName.c_str());
+                    ((TofInterface*)interfaces[numInterfaces])->SetThreshold(100);
                     break;
                 case INT_IMU:
                     interfaces[numInterfaces] = new IMUInterface(nh, channel, pipeName.c_str());
                     break;
                 case INT_VIO:
                     interfaces[numInterfaces] = new VIOInterface(nh, channel, pipeName.c_str());
+                    break;
+                case INT_PC:
+                    interfaces[numInterfaces] = new PointCloudInterface(nh, channel, pipeName.c_str());
                     break;
                 default:
                     printf("Invalid interface type specified for pipe: %s, exiting\n", pipeName.c_str());

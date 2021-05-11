@@ -125,9 +125,9 @@ void TofInterface::AdvertiseTopics(){
 void TofInterface::StartPublishing(){
 
     char fullName[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_client_construct_full_path(m_pipeName, fullName);
+    pipe_expand_location_string(m_pipeName, fullName);
 
-    if(pipe_client_init_channel(m_baseChannel, fullName, PIPE_CLIENT_NAME,
+    if(pipe_client_open(m_baseChannel, fullName, PIPE_CLIENT_NAME,
                 EN_PIPE_CLIENT_SIMPLE_HELPER, TOF_RECOMMENDED_READ_BUF_SIZE)){
         printf("Error opening pipe: %s\n", m_pipeName);
     } else {
@@ -139,7 +139,7 @@ void TofInterface::StartPublishing(){
 }
 void TofInterface::StopPublishing(){
 
-    pipe_client_close_channel(m_baseChannel);
+    pipe_client_close(m_baseChannel);
     m_state = ST_AD;
 
 }
@@ -174,13 +174,12 @@ int TofInterface::GetNumClients(){
 void TofInterface::InitializeCameraInfoMessage(const char *frame_id)
 {
 
-    char infoString[512];
-    if(pipe_client_get_info_string(m_baseChannel, infoString, 512) < 0) {
-        printf("Error getting tof camera info on channel: %d!\n", m_baseChannel);
+    cJSON* json = json_fetch_object(pipe_get_info_json(m_pipeName), "lens_parameters");
+
+    if(json == NULL){
+        printf("Could not find lens parameters in info file for %s\n", m_pipeName);
         return;
     }
-
-    cJSON* json = cJSON_Parse((const char *) infoString);
 
     //All defaults are the current calibration values at the time of writing
     double fx;
@@ -323,7 +322,7 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
     // validate that the data makes sense
     int n_packets;
-    tof_data_t* data_array = modal_tof_validate_pipe_data(data, bytes, &n_packets);
+    tof_data_t* data_array = pipe_validate_tof_data_t(data, bytes, &n_packets);
     if(data_array == NULL) return;
 
     TofInterface *interface = (TofInterface *) context;
