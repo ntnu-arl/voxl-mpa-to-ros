@@ -65,6 +65,10 @@ public:
     void StopPublishing();
     void Clean();
 
+    void SetThreshold(int value){
+        m_pcConfThreshold = value;
+    }
+
     void InitializeCameraInfoMessage(const char *frame_id);
     void InitializePointCloudMessage(const char *frame_id);
 

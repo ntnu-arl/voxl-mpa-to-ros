@@ -78,9 +78,9 @@ void CameraInterface::AdvertiseTopics(){
 void CameraInterface::StartPublishing(){
 
     char fullName[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_client_construct_full_path(m_pipeName, fullName);
+    pipe_expand_location_string(m_pipeName, fullName);
 
-    if(pipe_client_init_channel(m_baseChannel, fullName, PIPE_CLIENT_NAME,
+    if(pipe_client_open(m_baseChannel, fullName, PIPE_CLIENT_NAME,
                 EN_PIPE_CLIENT_CAMERA_HELPER, 0)){
         printf("Error opening pipe: %s\n", m_pipeName);
     } else {
@@ -91,7 +91,7 @@ void CameraInterface::StartPublishing(){
 }
 void CameraInterface::StopPublishing(){
 
-    pipe_client_close_channel(m_baseChannel);
+    pipe_client_close(m_baseChannel);
     m_state = ST_AD;
 
 }

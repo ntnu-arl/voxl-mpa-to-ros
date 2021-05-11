@@ -74,9 +74,9 @@ void VIOInterface::AdvertiseTopics(){
 void VIOInterface::StartPublishing(){
 
     char fullName[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_client_construct_full_path(m_pipeName, fullName);
+    pipe_expand_location_string(m_pipeName, fullName);
 
-    if(pipe_client_init_channel(m_baseChannel, fullName, PIPE_CLIENT_NAME,
+    if(pipe_client_open(m_baseChannel, fullName, PIPE_CLIENT_NAME,
                 EN_PIPE_CLIENT_SIMPLE_HELPER, VIO_RECOMMENDED_READ_BUF_SIZE)){
         printf("Error opening pipe: %s\n", m_pipeName);
     } else {
@@ -88,7 +88,7 @@ void VIOInterface::StartPublishing(){
 void VIOInterface::StopPublishing(){
 
     if(m_state == ST_RUNNING){
-        pipe_client_close_channel(m_baseChannel);
+        pipe_client_close(m_baseChannel);
         m_state = ST_AD;
     }
 
@@ -113,7 +113,7 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
     // validate that the data makes sense
     int n_packets;
-    vio_data_t* data_array = modal_vio_validate_pipe_data(data, bytes, &n_packets);
+    vio_data_t* data_array = pipe_validate_vio_data_t(data, bytes, &n_packets);
     if(data_array == NULL) return;
 
     VIOInterface *interface = (VIOInterface *) context;
