@@ -31,82 +31,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef TOF_MPA_INTERFACE
-#define TOF_MPA_INTERFACE
+#ifndef PC_MPA_INTERFACE
+#define PC_MPA_INTERFACE
 
-#include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/Image.h>
-#include <image_transport/image_transport.h>
-#include <image_transport/camera_publisher.h>
 
 #include "generic_interface.h"
 
 #define NUM_TOF_REQUIRED_CHANNELS 1
 
-#define FLIPIMAGE true
-
-#define TofImageWidth  224
-#define TofImageHeight 172
-#define TofImageSize   (TofImageHeight * TofImageWidth)
-
-class TofInterface: public GenericInterface
+class PointCloudInterface: public GenericInterface
 {
 public:
-    TofInterface(ros::NodeHandle rosNodeHandle,
+    PointCloudInterface(ros::NodeHandle rosNodeHandle,
                  int             baseChannel,
                  const char*     camName);
 
-    ~TofInterface() { };
+    ~PointCloudInterface() { };
 
     int  GetNumClients();
     void AdvertiseTopics();
     void StartPublishing();
     void StopPublishing();
     void Clean();
-
-    void SetThreshold(int value){
-        m_pcConfThreshold = value;
-    }
-
-    void InitializeCameraInfoMessage(const char *frame_id);
-    void InitializePointCloudMessage(const char *frame_id);
-
-    sensor_msgs::CameraInfo GetCamInfo(){
-        return m_cameraInfoMsg;
-    }
-
-    sensor_msgs::Image GetIRMsg(){
-        return m_irImageMsg;
-    }
-
-    image_transport::CameraPublisher GetIRPublisher(){
-        return m_irImagePublisher;
-    }
-
-    sensor_msgs::Image GetDepthMsg(){
-        return m_depthImageMsg;
-    }
-
-    image_transport::CameraPublisher GetDepthPublisher(){
-        return m_depthImagePublisher;
-    }
-
-    sensor_msgs::Image GetConfMsg(){
-        return m_confImageMsg;
-    }
-
-    image_transport::CameraPublisher GetConfPublisher(){
-        return m_confImagePublisher;
-    }
-
-    sensor_msgs::Image GetNoiseMsg(){
-        return m_noiseImageMsg;
-    }
-
-    image_transport::CameraPublisher GetNoisePublisher(){
-        return m_noiseImagePublisher;
-    }
 
     sensor_msgs::PointCloud2 GetPCMsg(){
         return m_pcMsg;
@@ -115,23 +62,9 @@ public:
         return m_pcPublisher;
     }
 
-    int                                    m_pcConfThreshold;              ///< Confidence thrshold to not publish points
-
 private:
-    sensor_msgs::CameraInfo                m_cameraInfoMsg;                ///< Camera Info message
 
-    sensor_msgs::Image                     m_irImageMsg;                   ///< IR Image message
-    image_transport::CameraPublisher       m_irImagePublisher;             ///< IR Image publisher
-
-    sensor_msgs::Image                     m_depthImageMsg;                ///< Depth Image message
-    image_transport::CameraPublisher       m_depthImagePublisher;          ///< Depth Image publisher
-
-    sensor_msgs::Image                     m_confImageMsg;                 ///< Confidence Image message
-    image_transport::CameraPublisher       m_confImagePublisher;           ///< Confidence Image publisher
-
-    sensor_msgs::Image                     m_noiseImageMsg;                ///< Noise Image message
-    image_transport::CameraPublisher       m_noiseImagePublisher;          ///< Noise Image publisher
-
+    int                                    m_inputPCType;
     sensor_msgs::PointCloud2               m_pcMsg;                        ///< Point cloud message
     ros::Publisher                         m_pcPublisher;                  ///< Point cloud publisher
 

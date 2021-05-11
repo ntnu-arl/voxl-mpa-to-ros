@@ -1,3 +1,6 @@
+0.0.5
+    * add pointcloud interface
+    * update all interfaces to use libmodal_pipe 2.0
 0.0.4
     * add hires and tof data transfer
 0.0.3
