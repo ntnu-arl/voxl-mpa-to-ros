@@ -1,3 +1,5 @@
+0.0.6
+    * add tflite and dfs interfaces to default published
 0.0.5
     * add pointcloud interface
     * update all interfaces to use libmodal_pipe 2.0
