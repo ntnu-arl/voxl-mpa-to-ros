@@ -28,8 +28,8 @@
     <arg name="image3_publish" default="true"                  />
     <arg name="image3_pipe"    default="dfs_disparity"         />
 
-    <arg name="image4_publish" default="false"                 />
-    <arg name="image4_pipe"    default=""                      />
+    <arg name="image4_publish" default="true"                  />
+    <arg name="image4_pipe"    default="tflite"                />
 
     <arg name="image5_publish" default="false"                 />
     <arg name="image5_pipe"    default=""                      />
