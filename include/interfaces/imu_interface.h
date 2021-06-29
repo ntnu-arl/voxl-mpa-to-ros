@@ -56,11 +56,11 @@ public:
     void StopPublishing();
     void Clean();
 
-    sensor_msgs::Imu GetImuMsg(){
+    sensor_msgs::Imu& GetImuMsg(){
         return m_imuMsg;
     }
 
-    ros::Publisher GetPublisher(){
+    ros::Publisher& GetPublisher(){
         return m_rosPublisher;
     }
 

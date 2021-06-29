@@ -128,11 +128,11 @@ static void _frame_cb(
         interface->Clean();
     }
 
-    image_transport::Publisher publisherL = interface->GetPublisherL();
-    sensor_msgs::Image imgL = interface->GetImageMsgL();
+    image_transport::Publisher& publisherL = interface->GetPublisherL();
+    sensor_msgs::Image& imgL = interface->GetImageMsgL();
 
-    image_transport::Publisher publisherR = interface->GetPublisherR();
-    sensor_msgs::Image imgR = interface->GetImageMsgR();
+    image_transport::Publisher& publisherR = interface->GetPublisherR();
+    sensor_msgs::Image& imgR = interface->GetImageMsgR();
 
     imgL.header.stamp.fromNSec(meta.timestamp_ns);
     imgL.width    = meta.width;

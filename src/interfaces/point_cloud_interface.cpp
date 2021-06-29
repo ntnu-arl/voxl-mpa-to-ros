@@ -138,8 +138,8 @@ static void _helper_cb (int ch, point_cloud_metadata_t meta, void* data, void* c
 
     if(interface->GetState() != ST_RUNNING) return;
 
-    sensor_msgs::PointCloud2         pcMsg =                 interface->GetPCMsg();
-    ros::Publisher                   pcPublisher =           interface->GetPCPublisher();
+    sensor_msgs::PointCloud2&   pcMsg =                 interface->GetPCMsg();
+    ros::Publisher&             pcPublisher =           interface->GetPCPublisher();
 
     if(pcMsg.height != 1 || pcMsg.width != meta.n_points){
         pcMsg.height = 1;

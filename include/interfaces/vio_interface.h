@@ -57,17 +57,17 @@ public:
     void StopPublishing();
     void Clean();
 
-    geometry_msgs::PoseStamped GetPoseMsg(){
+    geometry_msgs::PoseStamped& GetPoseMsg(){
         return m_poseMsg;
     }
-    nav_msgs::Odometry GetOdometryMsg(){
+    nav_msgs::Odometry& GetOdometryMsg(){
         return m_odomMsg;
     }
 
-    ros::Publisher GetPosePublisher(){
+    ros::Publisher& GetPosePublisher(){
         return m_posePublisher;
     }
-    ros::Publisher GetOdometryPublisher(){
+    ros::Publisher& GetOdometryPublisher(){
         return m_odomPublisher;
     }
 

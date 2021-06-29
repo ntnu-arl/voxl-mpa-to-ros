@@ -112,8 +112,8 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
     if(data_array == NULL) return;
 
     IMUInterface *interface = (IMUInterface *) context;
-    ros::Publisher publisher = interface->GetPublisher();
-    sensor_msgs::Imu imu = interface->GetImuMsg();
+    ros::Publisher& publisher = interface->GetPublisher();
+    sensor_msgs::Imu& imu = interface->GetImuMsg();
 
     // make a new data struct to hold the average
     imu_data_t avg;

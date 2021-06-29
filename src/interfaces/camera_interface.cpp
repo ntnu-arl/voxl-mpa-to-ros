@@ -119,8 +119,8 @@ static void _frame_cb(
 
     if(interface->GetState() != ST_RUNNING) return;
 
-    image_transport::Publisher publisher = interface->GetPublisher();
-    sensor_msgs::Image img = interface->GetImageMsg();
+    image_transport::Publisher& publisher = interface->GetPublisher();
+    sensor_msgs::Image& img = interface->GetImageMsg();
 
     img.header.stamp.fromNSec(meta.timestamp_ns);
     img.width    = meta.width;

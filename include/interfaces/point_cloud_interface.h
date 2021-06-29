@@ -55,10 +55,10 @@ public:
     void StopPublishing();
     void Clean();
 
-    sensor_msgs::PointCloud2 GetPCMsg(){
+    sensor_msgs::PointCloud2& GetPCMsg(){
         return m_pcMsg;
     }
-    ros::Publisher GetPCPublisher(){
+    ros::Publisher& GetPCPublisher(){
         return m_pcPublisher;
     }
 

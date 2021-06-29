@@ -329,22 +329,22 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
     if(interface->GetState() != ST_RUNNING) return;
 
-    sensor_msgs::CameraInfo          cameraInfoMsg =         interface->GetCamInfo();
+    sensor_msgs::CameraInfo&          cameraInfoMsg =         interface->GetCamInfo();
 
-    sensor_msgs::Image               irImageMsg =            interface->GetIRMsg();
-    image_transport::CameraPublisher irImagePublisher =      interface->GetIRPublisher();
+    sensor_msgs::Image&               irImageMsg =            interface->GetIRMsg();
+    image_transport::CameraPublisher& irImagePublisher =      interface->GetIRPublisher();
 
-    sensor_msgs::Image               depthImageMsg =         interface->GetDepthMsg();
-    image_transport::CameraPublisher depthImagePublisher =   interface->GetDepthPublisher();
+    sensor_msgs::Image&               depthImageMsg =         interface->GetDepthMsg();
+    image_transport::CameraPublisher& depthImagePublisher =   interface->GetDepthPublisher();
 
-    sensor_msgs::Image               confImageMsg =          interface->GetConfMsg();
-    image_transport::CameraPublisher confImagePublisher =    interface->GetConfPublisher();
+    sensor_msgs::Image&               confImageMsg =          interface->GetConfMsg();
+    image_transport::CameraPublisher& confImagePublisher =    interface->GetConfPublisher();
 
-    sensor_msgs::Image               noiseImageMsg =         interface->GetNoiseMsg();
-    image_transport::CameraPublisher noiseImagePublisher =   interface->GetNoisePublisher();
+    sensor_msgs::Image&               noiseImageMsg =         interface->GetNoiseMsg();
+    image_transport::CameraPublisher& noiseImagePublisher =   interface->GetNoisePublisher();
 
-    sensor_msgs::PointCloud2         pcMsg =                 interface->GetPCMsg();
-    ros::Publisher                   pcPublisher =           interface->GetPCPublisher();
+    sensor_msgs::PointCloud2&         pcMsg =                 interface->GetPCMsg();
+    ros::Publisher&                   pcPublisher =           interface->GetPCPublisher();
 
     int cutoff = interface->m_pcConfThreshold;
 

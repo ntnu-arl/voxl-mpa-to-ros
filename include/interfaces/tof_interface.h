@@ -72,46 +72,46 @@ public:
     void InitializeCameraInfoMessage(const char *frame_id);
     void InitializePointCloudMessage(const char *frame_id);
 
-    sensor_msgs::CameraInfo GetCamInfo(){
+    sensor_msgs::CameraInfo& GetCamInfo(){
         return m_cameraInfoMsg;
     }
 
-    sensor_msgs::Image GetIRMsg(){
+    sensor_msgs::Image& GetIRMsg(){
         return m_irImageMsg;
     }
 
-    image_transport::CameraPublisher GetIRPublisher(){
+    image_transport::CameraPublisher& GetIRPublisher(){
         return m_irImagePublisher;
     }
 
-    sensor_msgs::Image GetDepthMsg(){
+    sensor_msgs::Image& GetDepthMsg(){
         return m_depthImageMsg;
     }
 
-    image_transport::CameraPublisher GetDepthPublisher(){
+    image_transport::CameraPublisher& GetDepthPublisher(){
         return m_depthImagePublisher;
     }
 
-    sensor_msgs::Image GetConfMsg(){
+    sensor_msgs::Image& GetConfMsg(){
         return m_confImageMsg;
     }
 
-    image_transport::CameraPublisher GetConfPublisher(){
+    image_transport::CameraPublisher& GetConfPublisher(){
         return m_confImagePublisher;
     }
 
-    sensor_msgs::Image GetNoiseMsg(){
+    sensor_msgs::Image& GetNoiseMsg(){
         return m_noiseImageMsg;
     }
 
-    image_transport::CameraPublisher GetNoisePublisher(){
+    image_transport::CameraPublisher& GetNoisePublisher(){
         return m_noiseImagePublisher;
     }
 
-    sensor_msgs::PointCloud2 GetPCMsg(){
+    sensor_msgs::PointCloud2& GetPCMsg(){
         return m_pcMsg;
     }
-    ros::Publisher GetPCPublisher(){
+    ros::Publisher& GetPCPublisher(){
         return m_pcPublisher;
     }
 

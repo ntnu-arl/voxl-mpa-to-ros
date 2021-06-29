@@ -58,11 +58,11 @@ public:
     void StopPublishing();
     void Clean();
 
-    sensor_msgs::Image GetImageMsg(){
+    sensor_msgs::Image& GetImageMsg(){
         return m_imageMsg;
     }
 
-    image_transport::Publisher GetPublisher(){
+    image_transport::Publisher& GetPublisher(){
         return m_rosImagePublisher;
     }
 
