@@ -120,8 +120,8 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
     if(interface->GetState() != ST_RUNNING) return;
 
-    ros::Publisher posePublisher&  = interface->GetPosePublisher();
-    ros::Publisher odomPublisher&  = interface->GetOdometryPublisher();
+    ros::Publisher& posePublisher  = interface->GetPosePublisher();
+    ros::Publisher& odomPublisher  = interface->GetOdometryPublisher();
 
     geometry_msgs::PoseStamped&        poseMsg  = interface->GetPoseMsg();
     nav_msgs::Odometry&                odomMsg  = interface->GetOdometryMsg();
