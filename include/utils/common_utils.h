@@ -39,8 +39,6 @@
 
 #include <ros/ros.h>
 
-int rotation_to_quaternion(float R[3][3], double* q);
-
 ros::Time _clock_monotonic_to_ros_time(uint64_t monotonic_ns);
 
 int64_t _time_monotonic_ns();
