@@ -37,57 +37,6 @@
 #include <sensor_msgs/image_encodings.h>
 #include "common_utils.h"
 
-int rotation_to_quaternion(float R[3][3], double* q)
-{
-    float t,s;
-    float trace = R[0][0] + R[1][1] + R[2][2];
-
-    if(trace > 0.0){
-        s = sqrt(trace + 1.0);
-        q[0] = 0.5 * s;
-        s = 0.5 / s;
-        q[1] = (R[1][2] - R[2][1]) * s;
-        q[2] = (R[2][0] - R[0][2]) * s;
-        q[3] = (R[0][1] - R[1][0]) * s;
-    }
-    // algorithm courtesy of Mike Day
-    // https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
-    if (R[2][2] < 0){
-        if(R[0][0] >R[1][1]){
-            t= 1 + R[0][0] - R[1][1] - R[2][2];
-            s = (0.5 / sqrt(t));
-            q[0] = (R[1][2] - R[2][1]) * s;
-            q[1] = t*s;
-            q[2] = (R[0][1] + R[1][0]) * s;
-            q[3] = (R[2][0] + R[0][2]) * s;
-        }else{
-            t= 1 - R[0][0] + R[1][1] - R[2][2];
-            s = (0.5 / sqrt(t));
-            q[0] = (R[2][0] - R[0][2]) * s;
-            q[1] = (R[0][1] + R[1][0]) * s;
-            q[2] = t*s;
-            q[3] = (R[1][2] + R[2][1]) * s;
-        }
-    }else{
-        if(R[0][0] < -R[1][1]){
-            t= 1 - R[0][0] - R[1][1] + R[2][2];
-            s = (0.5 / sqrt(t));
-            q[0] = (R[0][1] - R[1][0]) * s;
-            q[1] = (R[2][0] + R[0][2]) * s;
-            q[2] = (R[1][2] + R[2][1]) * s;
-            q[3] = t*s;
-        }else{
-            t= 1 + R[0][0] + R[1][1] + R[2][2];
-            s = (0.5 / sqrt(t));
-            q[0] = t*s;
-            q[1] = (R[1][2] - R[2][1]) * s;
-            q[2] = (R[2][0] - R[0][2]) * s;
-            q[3] = (R[0][1] - R[1][0]) * s;
-        }
-    }
-    return 0;
-}
-
 // convert a monotonic clock time in nanoseconds to an equivalent ros::time
 // which is really clock_realtime, so an offset is calculated.
 ros::Time _clock_monotonic_to_ros_time(uint64_t monotonic_ns)

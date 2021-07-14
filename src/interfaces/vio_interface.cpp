@@ -133,13 +133,27 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
         poseMsg.header.stamp.fromNSec(data.timestamp_ns);
         odomMsg.header.stamp.fromNSec(data.timestamp_ns);
 
-        // translate VIO pose to ROS pose
-
-        rotation_to_quaternion(data.R_imu_to_vio, (double *)(&(poseMsg.pose.orientation.x)));
+        // extract quaternion from {imu w.r.t vio} rotation matrix
+        tf2::Matrix3x3 R(
+            data.R_imu_to_vio[0][0],
+            data.R_imu_to_vio[0][1],
+            data.R_imu_to_vio[0][2],
+            data.R_imu_to_vio[1][0],
+            data.R_imu_to_vio[1][1],
+            data.R_imu_to_vio[1][2],
+            data.R_imu_to_vio[2][0],
+            data.R_imu_to_vio[2][1],
+            data.R_imu_to_vio[2][2]);
+        tf2::Quaternion q;
+        R.getRotation(q);
 
         poseMsg.pose.position.x = data.T_imu_wrt_vio[0];
         poseMsg.pose.position.y = data.T_imu_wrt_vio[1];
         poseMsg.pose.position.z = data.T_imu_wrt_vio[2];
+        poseMsg.pose.orientation.x = q.getX();
+        poseMsg.pose.orientation.y = q.getY();
+        poseMsg.pose.orientation.z = q.getZ();
+        poseMsg.pose.orientation.w = q.getW();
         posePublisher.publish(poseMsg);
 
         odomMsg.pose.pose = poseMsg.pose;
