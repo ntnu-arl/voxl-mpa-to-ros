@@ -45,13 +45,15 @@ static void _helper_cb(
 
 TofInterface::TofInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_TOF_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_TOF_REQUIRED_CHANNELS, camName)
 {
     int format;
 
-    m_rosNodeHandle.param<int>(("tof_cutoff"), m_pcConfThreshold, 0);
+    m_rosNodeHandleParams.param<int>(("tof_cutoff"), m_pcConfThreshold, 0);
+    m_rosNodeHandleParams.param<std::string>(("tof_frameid"), m_frameid, "tof");
 
     format = IMAGE_FORMAT_RAW8;
     m_irImageMsg.header.frame_id = m_pipeName;
@@ -91,7 +93,7 @@ TofInterface::TofInterface(
 
     // these two are a little more complicated so they're in their own functions
     // for cleanliness
-    InitializePointCloudMessage("map");
+    InitializePointCloudMessage(m_frameid.c_str());
 
     pipe_client_set_simple_helper_cb(m_baseChannel, _helper_cb, this);
 
@@ -103,19 +105,19 @@ void TofInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s/ir", m_pipeName);
+    sprintf(topicName, "%s/ir", m_pipeName);
     m_irImagePublisher    = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/depth", m_pipeName);
+    sprintf(topicName, "%s/depth", m_pipeName);
     m_depthImagePublisher = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/confidence", m_pipeName);
+    sprintf(topicName, "%s/confidence", m_pipeName);
     m_confImagePublisher  = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/noise", m_pipeName);
+    sprintf(topicName, "%s/noise", m_pipeName);
     m_noiseImagePublisher = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/point_cloud", m_pipeName);
+    sprintf(topicName, "%s/point_cloud", m_pipeName);
     m_pcPublisher         = m_rosNodeHandle.advertise<sensor_msgs::PointCloud2>
                                 (topicName, NUM_PC_CHANNELS);
 

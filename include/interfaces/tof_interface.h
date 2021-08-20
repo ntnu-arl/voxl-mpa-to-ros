@@ -34,6 +34,8 @@
 #ifndef TOF_MPA_INTERFACE
 #define TOF_MPA_INTERFACE
 
+#include <string>
+
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
@@ -54,6 +56,7 @@ class TofInterface: public GenericInterface
 {
 public:
     TofInterface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
                  int             baseChannel,
                  const char*     camName);
 
@@ -116,6 +119,7 @@ public:
     }
 
     int                                    m_pcConfThreshold;              ///< Confidence thrshold to not publish points
+    std::string                            m_frameid;                      ///< ros tf frame id
 
 private:
     sensor_msgs::CameraInfo                m_cameraInfoMsg;                ///< Camera Info message

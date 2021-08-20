@@ -48,6 +48,7 @@ class VIOInterface: public GenericInterface
 {
 public:
     VIOInterface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
                  int             baseChannel,
                  const char*     name);
 

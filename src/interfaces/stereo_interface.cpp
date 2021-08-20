@@ -42,9 +42,10 @@ static void _frame_cb(
 
 StereoInterface::StereoInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_STEREO_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_STEREO_REQUIRED_CHANNELS, camName)
 {
 
     pipe_client_set_camera_helper_cb(m_baseChannel, _frame_cb, this);
@@ -67,10 +68,10 @@ void StereoInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s/left/image_raw", m_pipeName);
+    sprintf(topicName, "%s/left/image_raw", m_pipeName);
     m_rosImagePublisherL = it.advertise(topicName, 1);
 
-    sprintf(topicName, "/%s/right/image_raw", m_pipeName);
+    sprintf(topicName, "%s/right/image_raw", m_pipeName);
     m_rosImagePublisherR = it.advertise(topicName, 1);
 
     m_state = ST_AD;

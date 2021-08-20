@@ -45,9 +45,10 @@ static void _frame_cb(
 
 CameraInterface::CameraInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_CAM_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_CAM_REQUIRED_CHANNELS, camName)
 {
 
     m_imageMsg.header.frame_id = camName;
@@ -65,10 +66,10 @@ void CameraInterface::AdvertiseTopics(){
     if(strlen(m_pipeName) > strlen(PREVIEW_STRING) &&
         !strcmp(PREVIEW_STRING, &(m_pipeName[strlen(m_pipeName)-strlen(PREVIEW_STRING)]))){
 
-        sprintf(topicName, "/%.*s/image_raw", strlen(m_pipeName)-strlen(PREVIEW_STRING), m_pipeName);
+        sprintf(topicName, "%.*s/image_raw", strlen(m_pipeName)-strlen(PREVIEW_STRING), m_pipeName);
 
     } else {
-        sprintf(topicName, "/%s/image_raw", m_pipeName);
+        sprintf(topicName, "%s/image_raw", m_pipeName);
     }
     m_rosImagePublisher = it.advertise(topicName, 1);
 

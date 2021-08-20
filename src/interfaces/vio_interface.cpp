@@ -41,9 +41,10 @@ static void _helper_cb(
 
 VIOInterface::VIOInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    name) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_VIO_REQUIRED_CHANNELS, name)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_VIO_REQUIRED_CHANNELS, name)
 {
 
     const char *frame_id = "map";
@@ -62,11 +63,11 @@ void VIOInterface::AdvertiseTopics(){
 
     char frameName[64];
 
-    sprintf(frameName, "/%s/pose", m_pipeName);
-    m_posePublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<geometry_msgs::PoseStamped>(frameName,1);
+    sprintf(frameName, "%s/pose", m_pipeName);
+    m_posePublisher = m_rosNodeHandle.advertise<geometry_msgs::PoseStamped>(frameName,1);
 
-    sprintf(frameName, "/%s/odometry", m_pipeName);
-    m_odomPublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<nav_msgs::Odometry>(frameName,1);
+    sprintf(frameName, "%s/odometry", m_pipeName);
+    m_odomPublisher = m_rosNodeHandle.advertise<nav_msgs::Odometry>(frameName,1);
 
     m_state = ST_AD;
 

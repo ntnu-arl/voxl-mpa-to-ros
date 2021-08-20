@@ -47,6 +47,7 @@ class CameraInterface: public GenericInterface
 {
 public:
     CameraInterface(ros::NodeHandle rosNodeHandle,
+                    ros::NodeHandle rosNodeHandleParams,
                     int             baseChannel,
                     const char*     camName);
 
