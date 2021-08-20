@@ -63,7 +63,7 @@ void IMUInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s", m_pipeName);
+    sprintf(topicName, "%s", m_pipeName);
     m_rosPublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<sensor_msgs::Imu>(topicName, 1);
 
     m_state = ST_AD;

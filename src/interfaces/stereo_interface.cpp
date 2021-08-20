@@ -67,10 +67,10 @@ void StereoInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s/left/image_raw", m_pipeName);
+    sprintf(topicName, "%s/left/image_raw", m_pipeName);
     m_rosImagePublisherL = it.advertise(topicName, 1);
 
-    sprintf(topicName, "/%s/right/image_raw", m_pipeName);
+    sprintf(topicName, "%s/right/image_raw", m_pipeName);
     m_rosImagePublisherR = it.advertise(topicName, 1);
 
     m_state = ST_AD;

@@ -88,7 +88,7 @@ PointCloudInterface::PointCloudInterface(
 void PointCloudInterface::AdvertiseTopics(){
 
     char topicName[64];
-    sprintf(topicName, "/%s", m_pipeName);
+    sprintf(topicName, "%s", m_pipeName);
     m_pcPublisher         = m_rosNodeHandle.advertise<sensor_msgs::PointCloud2>
                                 (topicName, 3);
 

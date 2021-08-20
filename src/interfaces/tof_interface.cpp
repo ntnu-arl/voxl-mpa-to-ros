@@ -103,19 +103,19 @@ void TofInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s/ir", m_pipeName);
+    sprintf(topicName, "%s/ir", m_pipeName);
     m_irImagePublisher    = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/depth", m_pipeName);
+    sprintf(topicName, "%s/depth", m_pipeName);
     m_depthImagePublisher = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/confidence", m_pipeName);
+    sprintf(topicName, "%s/confidence", m_pipeName);
     m_confImagePublisher  = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/noise", m_pipeName);
+    sprintf(topicName, "%s/noise", m_pipeName);
     m_noiseImagePublisher = it.advertiseCamera(topicName, 1);
 
-    sprintf(topicName, "/%s/point_cloud", m_pipeName);
+    sprintf(topicName, "%s/point_cloud", m_pipeName);
     m_pcPublisher         = m_rosNodeHandle.advertise<sensor_msgs::PointCloud2>
                                 (topicName, NUM_PC_CHANNELS);
 
