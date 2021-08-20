@@ -41,9 +41,10 @@ static void _helper_cb(
 
 IMUInterface::IMUInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    name) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_IMU_REQUIRED_CHANNELS, name)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_IMU_REQUIRED_CHANNELS, name)
 {
 
     m_imuMsg.header.frame_id = "map";
@@ -63,8 +64,8 @@ void IMUInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "/%s", m_pipeName);
-    m_rosPublisher = ((ros::NodeHandle) m_rosNodeHandle).advertise<sensor_msgs::Imu>(topicName, 1);
+    sprintf(topicName, "%s", m_pipeName);
+    m_rosPublisher = m_rosNodeHandle.advertise<sensor_msgs::Imu>(topicName, 1);
 
     m_state = ST_AD;
 

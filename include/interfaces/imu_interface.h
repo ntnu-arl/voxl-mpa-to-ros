@@ -45,6 +45,7 @@ class IMUInterface: public GenericInterface
 {
 public:
     IMUInterface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
                  int             baseChannel,
                  const char*     name);
 

@@ -43,9 +43,10 @@ static void _helper_cb(
 
 PointCloudInterface::PointCloudInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_TOF_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_TOF_REQUIRED_CHANNELS, camName)
 {
     cJSON* info = pipe_get_info_json(m_pipeName);
 
@@ -88,7 +89,7 @@ PointCloudInterface::PointCloudInterface(
 void PointCloudInterface::AdvertiseTopics(){
 
     char topicName[64];
-    sprintf(topicName, "/%s", m_pipeName);
+    sprintf(topicName, "%s", m_pipeName);
     m_pcPublisher         = m_rosNodeHandle.advertise<sensor_msgs::PointCloud2>
                                 (topicName, 3);
 

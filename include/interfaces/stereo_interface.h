@@ -48,6 +48,7 @@ class StereoInterface: public GenericInterface
 {
 public:
     StereoInterface(ros::NodeHandle rosNodeHandle,
+                    ros::NodeHandle rosNodeHandleParams,
                     int             baseChannel,
                     const char*     camName);
 
