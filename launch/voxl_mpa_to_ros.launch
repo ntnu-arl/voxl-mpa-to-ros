@@ -147,13 +147,13 @@
             <param name="PC3_pipe"         value="$(arg PC3_pipe)"           />
             
         </node>
-    </group>
 
-    <group ns="$(arg image0_pipe)/image_raw" >
-      <rosparam param="disable_pub_plugins">
-        - 'image_transport/compressedDepth'
-        - 'image_transport/compressed'
-      </rosparam>
+        <group ns="$(arg image0_pipe)/image_raw" >
+          <rosparam param="disable_pub_plugins">
+            - 'image_transport/compressedDepth'
+            - 'image_transport/compressed'
+          </rosparam>
+        </group>
     </group>
 
 </launch>
