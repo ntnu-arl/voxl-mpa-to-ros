@@ -12,8 +12,10 @@
 
     <!-- This parameter will remove tof points with lower confidence than the given value
          Confidence values range from 0-255 -->
-
     <arg name="tof_cutoff"     default="100"             />
+
+    <!-- TOF point cloud data is published w.r.t the TOF ros tf frame -->
+    <arg name="tof_frameid"    default="tof"             />
 
     <!-- sample interface variables, specify whether to publish, and the pipe to look for -->
     <arg name="image0_publish" default="true"                  />
@@ -82,6 +84,7 @@
         <node name="voxl_mpa_to_ros_node" type="voxl_mpa_to_ros_node" pkg="voxl_mpa_to_ros" output="screen">
 
             <param name="tof_cutoff" value="$(arg tof_cutoff)" />
+            <param name="tof_frameid" value="$(arg tof_frameid)" />
 
             <param name="image0_publish"    value="$(arg image0_publish)"    />
             <param name="image0_pipe"       value="$(arg image0_pipe)"       />

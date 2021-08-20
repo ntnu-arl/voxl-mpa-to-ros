@@ -81,7 +81,7 @@ typedef struct PotentialInterface{
 
 }PotentialInterface;
 
-int MainEnter(int argc, char **argv, ros::NodeHandle nh){
+int MainEnter(int argc, char **argv, ros::NodeHandle nh, ros::NodeHandle nhp){
 
     int channel = 0;
     PotentialInterface potentials[NUM_POTENTIAL_INTERFACES] = POTENTIAL_INTERFACES;
@@ -91,31 +91,31 @@ int MainEnter(int argc, char **argv, ros::NodeHandle nh){
         PotentialInterface pInt = potentials[i];
 
         bool pub;
-        nh.param<bool>(pInt.publishArg, pub, false);
+        nhp.param<bool>(pInt.publishArg, pub, false);
         if(pub){
 
             std::string pipeName;
-            nh.getParam(pInt.pipeArg, pipeName);
+            nhp.getParam(pInt.pipeArg, pipeName);
 
             switch (pInt.type){
                 case INT_CAMERA:
-                    interfaces[numInterfaces] = new CameraInterface(nh, channel, pipeName.c_str());
+                    interfaces[numInterfaces] = new CameraInterface(nh, nhp, channel, pipeName.c_str());
                     break;
                 case INT_STEREO:
-                    interfaces[numInterfaces] = new StereoInterface(nh, channel, pipeName.c_str());
+                    interfaces[numInterfaces] = new StereoInterface(nh, nhp, channel, pipeName.c_str());
                     break;
                 case INT_TOF:
-                    interfaces[numInterfaces] = new TofInterface(nh, channel, pipeName.c_str());
+                    interfaces[numInterfaces] = new TofInterface(nh, nhp, channel, pipeName.c_str());
                     ((TofInterface*)interfaces[numInterfaces])->SetThreshold(100);
                     break;
                 case INT_IMU:
-                    interfaces[numInterfaces] = new IMUInterface(nh, channel, pipeName.c_str());
+                    interfaces[numInterfaces] = new IMUInterface(nh, nhp, channel, pipeName.c_str());
                     break;
                 case INT_VIO:
-                    interfaces[numInterfaces] = new VIOInterface(nh, channel, pipeName.c_str());
+                    interfaces[numInterfaces] = new VIOInterface(nh, nhp, channel, pipeName.c_str());
                     break;
                 case INT_PC:
-                    interfaces[numInterfaces] = new PointCloudInterface(nh, channel, pipeName.c_str());
+                    interfaces[numInterfaces] = new PointCloudInterface(nh, nhp, channel, pipeName.c_str());
                     break;
                 default:
                     printf("Invalid interface type specified for pipe: %s, exiting\n", pipeName.c_str());
@@ -159,8 +159,9 @@ void MainExit(){
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "voxl_mpa_to_ros_node");
-    ros::NodeHandle rosNodeHandle("~");
-    if(MainEnter(argc, argv, rosNodeHandle)){
+    ros::NodeHandle nhtopics("");
+    ros::NodeHandle nhparams("~");
+    if(MainEnter(argc, argv, nhtopics, nhparams)){
         MainExit();
         return -1;
     }

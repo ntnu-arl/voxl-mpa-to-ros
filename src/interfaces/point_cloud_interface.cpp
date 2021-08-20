@@ -43,9 +43,10 @@ static void _helper_cb(
 
 PointCloudInterface::PointCloudInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_TOF_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_TOF_REQUIRED_CHANNELS, camName)
 {
     cJSON* info = pipe_get_info_json(m_pipeName);
 

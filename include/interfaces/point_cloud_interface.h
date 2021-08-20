@@ -44,6 +44,7 @@ class PointCloudInterface: public GenericInterface
 {
 public:
     PointCloudInterface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
                  int             baseChannel,
                  const char*     camName);
 

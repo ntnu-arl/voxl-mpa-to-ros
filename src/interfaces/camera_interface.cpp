@@ -45,9 +45,10 @@ static void _frame_cb(
 
 CameraInterface::CameraInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_CAM_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_CAM_REQUIRED_CHANNELS, camName)
 {
 
     m_imageMsg.header.frame_id = camName;

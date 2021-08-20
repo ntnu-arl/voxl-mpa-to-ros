@@ -68,10 +68,12 @@ class GenericInterface
 public:
 
     GenericInterface(ros::NodeHandle  rosNodeHandle,
+                     ros::NodeHandle  rosNodeHandleParams,
                      int              baseChannel,
                      const int        numChannels,    //Numer of MPA channels this interface requires
                      const char *     pipeName):
     m_rosNodeHandle(rosNodeHandle),
+    m_rosNodeHandleParams(rosNodeHandleParams),
     m_baseChannel(baseChannel),
     m_numRequiredChannels(numChannels)
     {
@@ -156,7 +158,7 @@ protected:
 
     }
 
-    ros::NodeHandle         m_rosNodeHandle;
+    ros::NodeHandle         m_rosNodeHandle, m_rosNodeHandleParams;
     const int               m_baseChannel         = 0;
     const int               m_numRequiredChannels = 0;
     char                    m_pipeName[MODAL_PIPE_MAX_PATH_LEN];

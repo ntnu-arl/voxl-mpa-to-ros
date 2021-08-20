@@ -42,9 +42,10 @@ static void _frame_cb(
 
 StereoInterface::StereoInterface(
     ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
     int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, baseChannel, NUM_STEREO_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_STEREO_REQUIRED_CHANNELS, camName)
 {
 
     pipe_client_set_camera_helper_cb(m_baseChannel, _frame_cb, this);
