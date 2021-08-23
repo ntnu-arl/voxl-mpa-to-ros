@@ -355,11 +355,11 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
         tof_data_t data = data_array[i];
 
         int64_t timestamp = data.timestamp_ns;
-        irImageMsg    .header.stamp.fromNSec(timestamp);
-        depthImageMsg .header.stamp.fromNSec(timestamp);
-        confImageMsg  .header.stamp.fromNSec(timestamp);
-        noiseImageMsg .header.stamp.fromNSec(timestamp);
-        pcMsg         .header.stamp.fromNSec(timestamp);
+        irImageMsg    .header.stamp = _clock_monotonic_to_ros_time(timestamp);
+        depthImageMsg .header.stamp = _clock_monotonic_to_ros_time(timestamp);
+        confImageMsg  .header.stamp = _clock_monotonic_to_ros_time(timestamp);
+        noiseImageMsg .header.stamp = _clock_monotonic_to_ros_time(timestamp);
+        pcMsg         .header.stamp = _clock_monotonic_to_ros_time(timestamp);
 
         memcpy(&(irImageMsg   .data[0]), &(data.grayValues[0]),  irImageMsg.step    * irImageMsg.height);
         memcpy(&(confImageMsg .data[0]), &(data.confidences[0]), confImageMsg.step  * confImageMsg.height);
