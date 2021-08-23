@@ -364,16 +364,17 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
         memcpy(&(irImageMsg   .data[0]), &(data.grayValues[0]),  irImageMsg.step    * irImageMsg.height);
         memcpy(&(confImageMsg .data[0]), &(data.confidences[0]), confImageMsg.step  * confImageMsg.height);
         memcpy(&(noiseImageMsg.data[0]), &(data.noises[0]),      noiseImageMsg.step * noiseImageMsg.height);
+        memset(&(pcMsg.data[0]), 0, sizeof(uint8_t) * pcMsg.data.size());
 
         for(int i = 0; i < MPA_TOF_SIZE; i++){
 
             *((float *)&(depthImageMsg.data[i * sizeof(float)])) = data.points[i][2];
 
             if(data.confidences[i] > cutoff){
-                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[0].offset])) = data.points     [i][0];
-                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[1].offset])) = data.points     [i][1];
-                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[2].offset])) = data.points     [i][2];
-                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[3].offset])) = data.noises     [i];
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[0].offset])) = data.points[i][0];
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[1].offset])) = data.points[i][1];
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[2].offset])) = data.points[i][2];
+                *((float *)&(pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[3].offset])) = data.noises[i];
                 pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[4].offset] = data.confidences[i];
                 pcMsg.data[(i * pcMsg.point_step) + pcMsg.fields[5].offset] = data.grayValues [i];
             }
