@@ -35,8 +35,6 @@
 #include "camera_interface.h"
 #include "camera_helpers.h"
 
-#define PREVIEW_STRING "_preview"
-
 static void _frame_cb(
     __attribute__((unused)) int ch,
                             camera_image_metadata_t meta, 
@@ -46,58 +44,34 @@ static void _frame_cb(
 CameraInterface::CameraInterface(
     ros::NodeHandle rosNodeHandle,
     ros::NodeHandle rosNodeHandleParams,
-    int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_CAM_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, camName)
 {
 
     m_imageMsg.header.frame_id = camName;
     m_imageMsg.is_bigendian    = false;
 
-    pipe_client_set_camera_helper_cb(m_baseChannel, _frame_cb, this);
+    pipe_client_set_camera_helper_cb(m_channel, _frame_cb, this);
+
+    if(pipe_client_open(m_channel, camName, PIPE_CLIENT_NAME,
+                EN_PIPE_CLIENT_CAMERA_HELPER | CLIENT_FLAG_START_PAUSED, 0)){
+        pipe_client_close(m_channel);//Make sure we unclaim the channel
+        throw -1;
+    }
 
 }
 
 void CameraInterface::AdvertiseTopics(){
+
     image_transport::ImageTransport it(m_rosNodeHandle);
 
-    char topicName[64];
-
-    if(strlen(m_pipeName) > strlen(PREVIEW_STRING) &&
-        !strcmp(PREVIEW_STRING, &(m_pipeName[strlen(m_pipeName)-strlen(PREVIEW_STRING)]))){
-
-        sprintf(topicName, "%.*s/image_raw", strlen(m_pipeName)-strlen(PREVIEW_STRING), m_pipeName);
-
-    } else {
-        sprintf(topicName, "%s/image_raw", m_pipeName);
-    }
-    m_rosImagePublisher = it.advertise(topicName, 1);
+    m_rosImagePublisher = it.advertise(m_pipeName, 1);
 
     m_state = ST_AD;
 
 }
-void CameraInterface::StartPublishing(){
 
-    char fullName[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_expand_location_string(m_pipeName, fullName);
-
-    if(pipe_client_open(m_baseChannel, fullName, PIPE_CLIENT_NAME,
-                EN_PIPE_CLIENT_CAMERA_HELPER, 0)){
-        printf("Error opening pipe: %s\n", m_pipeName);
-    } else {
-        pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
-        m_state = ST_RUNNING;
-    }
-
-}
-void CameraInterface::StopPublishing(){
-
-    pipe_client_close(m_baseChannel);
-    m_state = ST_AD;
-
-}
-
-void CameraInterface::Clean(){
+void CameraInterface::StopAdvertising(){
 
     m_rosImagePublisher.shutdown();
     m_state = ST_CLEAN;
@@ -117,6 +91,8 @@ static void _frame_cb(
 {
 
     CameraInterface *interface = (CameraInterface *) context;
+
+    printf("%s frame: %d\n", interface->GetPipeName(), meta.frame_id);
 
     if(interface->GetState() != ST_RUNNING) return;
 

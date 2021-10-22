@@ -31,56 +31,40 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef VIO_MPA_INTERFACE
-#define VIO_MPA_INTERFACE
+#ifndef IMU_MPA_INTERFACE
+#define IMU_MPA_INTERFACE
 
 #include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <nav_msgs/Odometry.h>
-#include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2/LinearMath/Quaternion.h>
+#include <sensor_msgs/Imu.h>
 
 #include "generic_interface.h"
 
-#define NUM_VIO_REQUIRED_CHANNELS 1
 
-class VIOInterface: public GenericInterface
+class IMUInterface: public GenericInterface
 {
 public:
-    VIOInterface(ros::NodeHandle rosNodeHandle,
+    IMUInterface(ros::NodeHandle rosNodeHandle,
                  ros::NodeHandle rosNodeHandleParams,
-                 int             baseChannel,
                  const char*     name);
 
-    ~VIOInterface() { };
+    ~IMUInterface() { };
 
     int  GetNumClients();
     void AdvertiseTopics();
-    void StartPublishing();
-    void StopPublishing();
-    void Clean();
+    void StopAdvertising();
 
-    geometry_msgs::PoseStamped& GetPoseMsg(){
-        return m_poseMsg;
-    }
-    nav_msgs::Odometry& GetOdometryMsg(){
-        return m_odomMsg;
+    sensor_msgs::Imu& GetImuMsg(){
+        return m_imuMsg;
     }
 
-    ros::Publisher& GetPosePublisher(){
-        return m_posePublisher;
-    }
-    ros::Publisher& GetOdometryPublisher(){
-        return m_odomPublisher;
+    ros::Publisher& GetPublisher(){
+        return m_rosPublisher;
     }
 
 private:
 
-    geometry_msgs::PoseStamped           m_poseMsg;                    ///< Image message
-    nav_msgs::Odometry                   m_odomMsg;                    ///< Image message
-
-    ros::Publisher                       m_posePublisher;              ///< Image publisher
-    ros::Publisher                       m_odomPublisher;              ///< Image publisher
+    sensor_msgs::Imu               m_imuMsg;                ///< Imu message
+    ros::Publisher                 m_rosPublisher;          ///< Imu publisher
 
 };
 #endif

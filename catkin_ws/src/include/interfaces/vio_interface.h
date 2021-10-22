@@ -31,46 +31,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef CAMERA_MPA_INTERFACE
-#define CAMERA_MPA_INTERFACE
+#ifndef VIO_MPA_INTERFACE
+#define VIO_MPA_INTERFACE
 
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/Image.h>
-#include <image_transport/image_transport.h>
-#include <image_transport/publisher.h>
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Odometry.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
 
 #include "generic_interface.h"
 
-#define NUM_CAM_REQUIRED_CHANNELS 1
-
-class CameraInterface: public GenericInterface
+class VIOInterface: public GenericInterface
 {
 public:
-    CameraInterface(ros::NodeHandle rosNodeHandle,
-                    ros::NodeHandle rosNodeHandleParams,
-                    int             baseChannel,
-                    const char*     camName);
+    VIOInterface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
+                 const char*     name);
 
-    ~CameraInterface() { };
+    ~VIOInterface() { };
 
     int  GetNumClients();
     void AdvertiseTopics();
-    void StartPublishing();
-    void StopPublishing();
-    void Clean();
+    void StopAdvertising();
 
-    sensor_msgs::Image& GetImageMsg(){
-        return m_imageMsg;
+    geometry_msgs::PoseStamped& GetPoseMsg(){
+        return m_poseMsg;
+    }
+    nav_msgs::Odometry& GetOdometryMsg(){
+        return m_odomMsg;
     }
 
-    image_transport::Publisher& GetPublisher(){
-        return m_rosImagePublisher;
+    ros::Publisher& GetPosePublisher(){
+        return m_posePublisher;
+    }
+    ros::Publisher& GetOdometryPublisher(){
+        return m_odomPublisher;
     }
 
 private:
 
-    sensor_msgs::Image                     m_imageMsg;                   ///< Image message
-    image_transport::Publisher             m_rosImagePublisher;          ///< Image publisher
+    geometry_msgs::PoseStamped           m_poseMsg;                    ///< Image message
+    nav_msgs::Odometry                   m_odomMsg;                    ///< Image message
+
+    ros::Publisher                       m_posePublisher;              ///< Image publisher
+    ros::Publisher                       m_odomPublisher;              ///< Image publisher
 
 };
 #endif

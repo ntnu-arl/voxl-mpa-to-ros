@@ -1,5 +1,8 @@
+0.0.8
+    * now standalone project, no longer part of voxl-nodes
+    * restructure to no longer use a complicated launch file, dynamically finds pipes
 0.0.7
-	* update interfaces to pass by reference
+    * update interfaces to pass by reference
 0.0.6
     * add tflite and dfs interfaces to default published
 0.0.5

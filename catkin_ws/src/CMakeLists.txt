@@ -71,17 +71,12 @@ include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -pthread -Wall -fpermissive")
 
-file(GLOB interfaces CONFIGURE_DEPENDS "src/interfaces/*_interface.cpp")
-file(GLOB utils CONFIGURE_DEPENDS "src/utils/*.cpp")
+# Build lib from all source files
+file(GLOB_RECURSE all_src_files src/*.c*)
 
 add_executable(${PROJECT_NAME}_node
-    src/mpa_ros_node.cpp
-    src/interface_manager.cpp
-    ${interfaces}
-    ${utils}
+    ${all_src_files}
 )
-
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}

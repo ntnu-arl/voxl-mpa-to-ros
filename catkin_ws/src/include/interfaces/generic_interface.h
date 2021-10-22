@@ -69,19 +69,23 @@ public:
 
     GenericInterface(ros::NodeHandle  rosNodeHandle,
                      ros::NodeHandle  rosNodeHandleParams,
-                     int              baseChannel,
-                     const int        numChannels,    //Numer of MPA channels this interface requires
                      const char *     pipeName):
     m_rosNodeHandle(rosNodeHandle),
     m_rosNodeHandleParams(rosNodeHandleParams),
-    m_baseChannel(baseChannel),
-    m_numRequiredChannels(numChannels)
+    m_channel(pipe_client_get_next_available_channel())
     {
+
+    	if(m_channel == -1) throw -1;
+        pipe_client_set_disconnect_cb(m_channel, _interface_dc_cb, this);
+    	//printf("%s on channel: %d\n", pipeName, m_channel);
         strcpy(m_pipeName, pipeName);
         m_state = ST_READY;
     }
 
-    virtual ~GenericInterface(){};
+    virtual ~GenericInterface(){
+    	printf("Closing %s on channel: %d\n", m_pipeName, m_channel);
+    	pipe_client_close(m_channel);
+    };
 
 
     /**
@@ -107,8 +111,16 @@ public:
      * This may be called multiple times during execution
      * 
      * state should be set to running at the end of a successful call
+     * 
+     * Simple version implemented here, can be overridden if necessary
+     * 
      */
-    virtual void StartPublishing()     = 0;
+    virtual void StartPublishing() {
+
+    	pipe_client_resume(m_channel);
+    	m_state = ST_RUNNING;
+
+    }
 
     /**
      * The interface should use this function to unsubscribe from its
@@ -117,16 +129,23 @@ public:
      * This may be called multiple times during execution
      * 
      * state should be set to advertising at the end of a successful call
+     * 
+     * Simple version implemented here, can be overridden if necessary
+     * 
      */
-    virtual void StopPublishing()      = 0;
+    virtual void StopPublishing() {
+
+	    pipe_client_pause(m_channel);
+	    m_state = ST_AD;
+
+	}
 
     /**
-     * The interface should use this function to close all ros outputs and
-     * mpa pipes
+     * The interface should use this function to close all ros outputs
      * 
      * state should be set to clean at the end of a successful call
      */
-    virtual void Clean()        = 0;
+    virtual void StopAdvertising()   = 0;
 
     InterfaceState GetState(){
         return m_state;
@@ -136,11 +155,7 @@ public:
         m_state = state;
     }
 
-    const int GetNumRequiredChannels(){
-        return m_numRequiredChannels;
-    }
-
-    char *GetPipeName(){
+    const char *GetPipeName(){
         return (char *)m_pipeName;
     }
 
@@ -153,16 +168,15 @@ protected:
         printf("Interface: %s's data pipe disconnected, closing until it returns\n", interface->GetPipeName());
 
         interface->StopPublishing();
-        interface->Clean();
+        interface->StopAdvertising();
         interface->SetState(ST_READY);
 
     }
 
     ros::NodeHandle         m_rosNodeHandle, m_rosNodeHandleParams;
-    const int               m_baseChannel         = 0;
-    const int               m_numRequiredChannels = 0;
     char                    m_pipeName[MODAL_PIPE_MAX_PATH_LEN];
     InterfaceState          m_state               = ST_NULL;
+    const int               m_channel;
 
 };
 

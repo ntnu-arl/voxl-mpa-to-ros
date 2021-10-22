@@ -31,56 +31,40 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef STEREO_MPA_INTERFACE
-#define STEREO_MPA_INTERFACE
+#ifndef PC_MPA_INTERFACE
+#define PC_MPA_INTERFACE
 
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/Image.h>
-#include <image_transport/image_transport.h>
-#include <image_transport/publisher.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #include "generic_interface.h"
 
-//Number of required MPA channels
-#define NUM_STEREO_REQUIRED_CHANNELS 1
-
-class StereoInterface: public GenericInterface
+class PointCloudInterface: public GenericInterface
 {
 public:
-    StereoInterface(ros::NodeHandle rosNodeHandle,
-                    ros::NodeHandle rosNodeHandleParams,
-                    int             baseChannel,
-                    const char*     camName);
+    PointCloudInterface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
+                 const char*     name);
 
-    ~StereoInterface() { };
+    ~PointCloudInterface() { };
 
     int  GetNumClients();
     void AdvertiseTopics();
-    void StartPublishing();
-    void StopPublishing();
-    void Clean();
+    void StopAdvertising();
 
-    sensor_msgs::Image& GetImageMsgL(){
-        return m_imageMsgL;
+    sensor_msgs::PointCloud2& GetPCMsg(){
+        return m_pcMsg;
     }
-    sensor_msgs::Image& GetImageMsgR(){
-        return m_imageMsgR;
+    ros::Publisher& GetPCPublisher(){
+        return m_pcPublisher;
     }
-
-    image_transport::Publisher& GetPublisherL(){
-        return m_rosImagePublisherL;
-    }
-    image_transport::Publisher& GetPublisherR(){
-        return m_rosImagePublisherR;
-    }
+    uint m_inputPCType = -1;
 
 private:
 
-    sensor_msgs::Image                     m_imageMsgL;                   ///< Image message
-    image_transport::Publisher             m_rosImagePublisherL;          ///< Image publisher
+    sensor_msgs::PointCloud2               m_pcMsg;                        ///< Point cloud message
+    ros::Publisher                         m_pcPublisher;                  ///< Point cloud publisher
 
-    sensor_msgs::Image                     m_imageMsgR;                   ///< Image message
-    image_transport::Publisher             m_rosImagePublisherR;          ///< Image publisher
+
 
 };
 #endif

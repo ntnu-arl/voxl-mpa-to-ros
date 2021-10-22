@@ -43,16 +43,9 @@ static void _frame_cb(
 StereoInterface::StereoInterface(
     ros::NodeHandle rosNodeHandle,
     ros::NodeHandle rosNodeHandleParams,
-    int             baseChannel,
     const char *    camName) :
-    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_STEREO_REQUIRED_CHANNELS, camName)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, camName)
 {
-
-    pipe_client_set_camera_helper_cb(m_baseChannel, _frame_cb, this);
-
-}
-
-void StereoInterface::AdvertiseTopics(){
 
     char frameName[64];
 
@@ -64,41 +57,33 @@ void StereoInterface::AdvertiseTopics(){
     m_imageMsgR.header.frame_id = frameName;
     m_imageMsgR.is_bigendian    = false;
 
+    pipe_client_set_camera_helper_cb(m_channel, _frame_cb, this);
+
+    if(pipe_client_open(m_channel, camName, PIPE_CLIENT_NAME,
+                EN_PIPE_CLIENT_CAMERA_HELPER | CLIENT_FLAG_START_PAUSED, 0)){
+        pipe_client_close(m_channel);//Make sure we unclaim the channel
+        throw -1;
+    }
+
+}
+
+void StereoInterface::AdvertiseTopics(){
+
     image_transport::ImageTransport it(m_rosNodeHandle);
 
     char topicName[64];
 
-    sprintf(topicName, "%s/left/image_raw", m_pipeName);
+    sprintf(topicName, "%s/left", m_pipeName);
     m_rosImagePublisherL = it.advertise(topicName, 1);
 
-    sprintf(topicName, "%s/right/image_raw", m_pipeName);
+    sprintf(topicName, "%s/right", m_pipeName);
     m_rosImagePublisherR = it.advertise(topicName, 1);
 
     m_state = ST_AD;
 
 }
-void StereoInterface::StartPublishing(){
 
-    char fullName[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_expand_location_string(m_pipeName, fullName);
-
-    if(pipe_client_open(m_baseChannel, fullName, PIPE_CLIENT_NAME,
-                EN_PIPE_CLIENT_CAMERA_HELPER, 0)){
-        printf("Error opening pipe: %s\n", m_pipeName);
-    } else {
-        pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
-        m_state = ST_RUNNING;
-    }
-
-}
-void StereoInterface::StopPublishing(){
-
-    pipe_client_close(m_baseChannel);
-    m_state = ST_AD;
-
-}
-
-void StereoInterface::Clean(){
+void StereoInterface::StopAdvertising(){
 
     m_rosImagePublisherL.shutdown();
     m_rosImagePublisherR.shutdown();
@@ -126,7 +111,7 @@ static void _frame_cb(
     if(meta.format != IMAGE_FORMAT_STEREO_RAW8){
         printf("Stereo interface received non-stereo frame, exiting stereo\n");
         interface->StopPublishing();
-        interface->Clean();
+        interface->StopAdvertising();
     }
 
     image_transport::Publisher& publisherL = interface->GetPublisherL();
