@@ -31,44 +31,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef IMU_MPA_INTERFACE
-#define IMU_MPA_INTERFACE
-
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <getopt.h>
+#include <signal.h>
 #include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
+#include <modal_pipe.h>
+#include "interface_manager.h"
 
-#include "generic_interface.h"
+InterfaceManager *manager = NULL;
 
-#define NUM_IMU_REQUIRED_CHANNELS 1
+int MainEnter(int argc, char **argv, ros::NodeHandle nh, ros::NodeHandle nhp){
 
-class IMUInterface: public GenericInterface
+    manager = new InterfaceManager(nh, nhp);
+
+    manager->Start();
+
+    return 0;
+
+}
+
+void MainExit(){
+
+    if(manager != NULL){
+        manager->Stop();
+
+        delete manager;
+    }
+}
+
+int main(int argc, char **argv)
 {
-public:
-    IMUInterface(ros::NodeHandle rosNodeHandle,
-                 ros::NodeHandle rosNodeHandleParams,
-                 int             baseChannel,
-                 const char*     name);
-
-    ~IMUInterface() { };
-
-    int  GetNumClients();
-    void AdvertiseTopics();
-    void StartPublishing();
-    void StopPublishing();
-    void Clean();
-
-    sensor_msgs::Imu& GetImuMsg(){
-        return m_imuMsg;
+    ros::init(argc, argv, "voxl_mpa_to_ros_node");
+    ros::NodeHandle nhtopics("");
+    ros::NodeHandle nhparams("~");
+    if(MainEnter(argc, argv, nhtopics, nhparams)){
+        MainExit();
+        return -1;
     }
 
-    ros::Publisher& GetPublisher(){
-        return m_rosPublisher;
-    }
+    printf("\n\nMPA to ROS app is now running\n\n");
+    fflush(stdout);
 
-private:
+    ros::spin();
+    ros::AsyncSpinner spinner(1); // Use 1 thread
+    spinner.start();
+    ros::waitForShutdown();
 
-    sensor_msgs::Imu               m_imuMsg;                   ///< Image message
-    ros::Publisher                 m_rosPublisher;          ///< Image publisher
+    printf("\nMPA to ROS app is now stopping\n\n");
+    MainExit();
+    printf("\nMPA to ROS app is done\n\n");
 
-};
-#endif
+    return 0;
+}

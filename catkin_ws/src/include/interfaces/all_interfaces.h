@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2020 ModalAI Inc.
+ * Copyright 2021 ModalAI Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,45 +31,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef PC_MPA_INTERFACE
-#define PC_MPA_INTERFACE
-
-#include <sensor_msgs/PointCloud2.h>
+#ifndef ALL_MPA_INTERFACES
+#define ALL_MPA_INTERFACES
 
 #include "generic_interface.h"
+#include "camera_interface.h"
+#include "stereo_interface.h"
+#include "imu_interface.h"
+#include "vio_interface.h"
+#include "point_cloud_interface.h"
 
-#define NUM_TOF_REQUIRED_CHANNELS 1
-
-class PointCloudInterface: public GenericInterface
-{
-public:
-    PointCloudInterface(ros::NodeHandle rosNodeHandle,
-                 ros::NodeHandle rosNodeHandleParams,
-                 int             baseChannel,
-                 const char*     camName);
-
-    ~PointCloudInterface() { };
-
-    int  GetNumClients();
-    void AdvertiseTopics();
-    void StartPublishing();
-    void StopPublishing();
-    void Clean();
-
-    sensor_msgs::PointCloud2& GetPCMsg(){
-        return m_pcMsg;
-    }
-    ros::Publisher& GetPCPublisher(){
-        return m_pcPublisher;
-    }
-
-private:
-
-    int                                    m_inputPCType;
-    sensor_msgs::PointCloud2               m_pcMsg;                        ///< Point cloud message
-    ros::Publisher                         m_pcPublisher;                  ///< Point cloud publisher
-
-
-
+enum InterfaceType {
+    INT_NOT_SUPPORTED=-2,
+    INT_NONE=-1,
+    INT_CAMERA,
+    INT_STEREO,
+    INT_IMU,
+    INT_VIO,
+    INT_PC
 };
+
 #endif

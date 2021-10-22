@@ -32,7 +32,8 @@
  ******************************************************************************/
 
 #include <stdio.h>
-#include "generic_interface.h"
+#include <stdlib.h>
+#include "all_interfaces.h"
 #include "interface_manager.h"
 
 #define THREAD_INTERVAL_MS 1000
@@ -44,15 +45,13 @@ static bool pipeExists(const char *pipeName);
 // -----------------------------------------------------------------------------------------------------------------------------
 // Constructor
 // -----------------------------------------------------------------------------------------------------------------------------
-InterfaceManager::InterfaceManager(GenericInterface** interfaces,
-                                   int                numInterfaces)
+InterfaceManager::InterfaceManager(ros::NodeHandle nh, ros::NodeHandle nhp)
 {
     
     m_threadData.manager = this;
     m_threadData.running = false;
-
-    m_interfaces         = interfaces;
-    m_numInterfaces      = numInterfaces;
+    m_threadData.nh = nh;
+    m_threadData.nhp = nhp;
 
 }
 
@@ -82,32 +81,174 @@ void InterfaceManager::Stop()
     pthread_join(m_thread, NULL);
 }
 
+typedef struct InterfaceListNode {
+
+	GenericInterface *interface;
+	char name[64];
+    struct InterfaceListNode *next;
+
+} InterfaceListNode;
+
+static bool listContainsPipe(InterfaceListNode *head, char *name){
+
+    for(InterfaceListNode *cur = head->next; cur != NULL; cur = cur->next){
+
+    	if(!strcmp(name, cur->name)){
+
+    		return true;
+    	}
+    }
+
+    return false;
+}
+
+static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandle nhp){
+
+	InterfaceListNode *tail;
+    for(tail = head; tail->next != NULL; tail = tail->next);
+
+	FILE *fp = popen("voxl-list-pipes --mode-types", "r");
+	if (!fp) {
+		fprintf(stderr, "Error opening list-pipes command\n");
+		return -1;
+	}
+
+	InterfaceType curType = INT_NONE;
+	char buf[64];
+	while(fgets(buf, 64, fp) != NULL){
+		//printf("%s", buf);
+
+		//Empty line, about to recieve new type
+		if(strlen(buf) == 1){
+			curType = INT_NONE;
+			continue;
+		}
+
+		if(curType == INT_NONE){
+
+			// This is a pipe name not a type, something has gone wrong
+			if(buf[0] == '\t'){
+				fprintf(stderr, "Parse error while reading voxl-list-pipes (looking for pipe), exiting\n");
+				pclose(fp);
+				return -1;
+			}
+
+			if(!strncmp(buf, "camera_image_metadata_t", strlen("camera_image_metadata_t"))){
+				//printf("Processing Type: %s\n", buf);
+				curType = INT_CAMERA;
+			} else if(!strncmp(buf, "imu_data_t", strlen("imu_data_t"))){
+				//printf("Processing Type: %s\n", buf);
+				curType = INT_IMU;
+			} else if(!strncmp(buf, "vio_data_t", strlen("vio_data_t"))){
+				//printf("Processing Type: %s\n", buf);
+				curType = INT_VIO;
+			} else if(!strncmp(buf, "point_cloud_metadata_t", strlen("point_cloud_metadata_t"))){
+				//printf("Processing Type: %s\n", buf);
+				curType = INT_PC;
+			} else {
+				curType = INT_NOT_SUPPORTED;
+			} 
+
+		} else if(curType == INT_NOT_SUPPORTED){//This pipe has a type that we don't publish to ros, ignore the available pipes
+
+			continue;
+
+		} else { //Getting a pipe name for a known interface type
+
+			// This is a type not a pipe name, something has gone wrong
+			if(buf[0] != '\t'){
+				fprintf(stderr, "Parse error while reading voxl-list-pipes (looking for pipe), exiting\n");
+				pclose(fp);
+				return -1;
+			}
+
+			char *name = &buf[1];
+
+			name[strlen(name) - 1] = 0;//Remove newline
+
+			if(listContainsPipe(head, name)){//This interface is already open
+				continue;
+			}
+
+			printf("Found new interface: %s\n", name);
+
+			InterfaceListNode *newNode = (InterfaceListNode *)malloc(sizeof(InterfaceListNode));
+			if(newNode == NULL){
+				fprintf(stderr, "Error mallocing in findPipes, Exiting\n");
+				pclose(fp);
+				return -1;
+			}
+
+			strcpy(newNode->name, name);
+			newNode->next = NULL;
+
+			try {
+				switch(curType) {
+
+					case INT_CAMERA:
+					case INT_STEREO:
+						if(strstr(newNode->name, "stereo")){
+							newNode->interface = new StereoInterface(nh, nhp, newNode->name);
+						} else {
+							newNode->interface = new CameraInterface(nh, nhp, newNode->name);
+						}
+						break;
+
+					case INT_IMU:
+						newNode->interface = new IMUInterface(nh, nhp, newNode->name);
+						break;
+
+					case INT_VIO:
+						newNode->interface = new VIOInterface(nh, nhp, newNode->name);
+						break;
+
+					case INT_PC:
+						newNode->interface = new PointCloudInterface(nh, nhp, newNode->name);
+						break;
+
+					default: //Should never get here
+						printf("Reached impossible line of code: %s %d\n", __FUNCTION__, __LINE__);
+						exit(-1);
+
+				}
+
+				tail->next = newNode;
+				tail = newNode;
+				newNode->interface->AdvertiseTopics();
+
+			} catch (int i){
+
+				fprintf(stderr, "Failed to open pipe: %s\n", newNode->name);
+				free(newNode);
+
+			}
+
+		}
+
+
+	}
+
+	//fprintf(stderr, "done reading, closing pipe\n");
+	pclose(fp);
+
+	return 0;
+
+}
+
 static void* ThreadManageInterfaces(void *pData){
 
     ThreadData*        pThreadData = (ThreadData*)pData;
-    InterfaceManager*  manager     = pThreadData->manager;
-
-    printf("Starting Manager Thread with %d interfaces\n\n",manager->GetNumInterfaces());
-
-    for(int i = 0; i < manager->GetNumInterfaces(); i++){
-
-        GenericInterface *interface = manager->GetInterface(i);
-
-        if(pipeExists(interface->GetPipeName())){
-            interface->AdvertiseTopics();
-            printf("Found pipe for interface: %s, now advertising\n", interface->GetPipeName());
-        } else {
-            printf("Did not find pipe for interface: %s,\n\
-\tinterface will be idle until its pipe appears\n", interface->GetPipeName());
-        }
-
-    }
+    InterfaceListNode  head        = {NULL, "", NULL};
 
     while(pThreadData->running){
 
-        for(int i = 0; i < manager->GetNumInterfaces(); i++){
+    	if(findPipes(&head, pThreadData->nh, pThreadData->nhp)){
+    		break;
+    	}
 
-            GenericInterface *interface = manager->GetInterface(i);
+        for(InterfaceListNode *i = head.next; i != NULL; i = i->next){
+
+            GenericInterface *interface = i->interface;
 
             if(interface->GetState() == ST_READY && pipeExists(interface->GetPipeName())){
                 interface->AdvertiseTopics();
@@ -123,7 +264,7 @@ static void* ThreadManageInterfaces(void *pData){
             }
 
             if(interface->GetState() == ST_AD && !pipeExists(interface->GetPipeName())){
-                interface->Clean();
+                interface->StopAdvertising();
                 interface->SetState(ST_READY);
                 printf("Interface: %s's data pipe disconnected, closing until it returns\n", interface->GetPipeName());
                 continue;
@@ -136,24 +277,28 @@ static void* ThreadManageInterfaces(void *pData){
                 }
                 continue;
             }
-
         }
 
         usleep(THREAD_INTERVAL_MS * 1000);
     }
 
-    for(int i = 0; i < manager->GetNumInterfaces(); i++){
+    //Clean the list
+    for(InterfaceListNode *i = head.next; i != NULL; i = head.next){
 
-        GenericInterface *interface = manager->GetInterface(i);
+        GenericInterface *interface = i->interface;
 
         if(interface->GetState() == ST_RUNNING){
             interface->StopPublishing();
         }
 
         if(interface->GetState() == ST_AD){
-            interface->Clean();
+            interface->StopAdvertising();
         }
 
+        head.next = i->next;
+
+        delete i->interface;
+        free(i);
     }
 
     return NULL;
@@ -166,6 +311,11 @@ static bool pipeExists(const char *pipeName){
     pipe_expand_location_string((char *)pipeName, fullPath);
     strcat(fullPath, "request");
 
-    return access(fullPath, F_OK) == 0;
+    //return access(fullPath, F_OK) == 0;
+    if (access(fullPath, F_OK) == 0){
+    	return true;
+    } else {
+    	return false;
+    }
 
 }

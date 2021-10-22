@@ -31,24 +31,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef ALL_MPA_INTERFACEs
-#define ALL_MPA_INTERFACEs
+#ifndef MPA_INTERFACE_MANAGER
+#define MPA_INTERFACE_MANAGER
 
 #include "generic_interface.h"
-#include "camera_interface.h"
-#include "stereo_interface.h"
-#include "tof_interface.h"
-#include "imu_interface.h"
-#include "vio_interface.h"
-#include "point_cloud_interface.h"
 
-enum InterfaceType {
-    INT_CAMERA,
-    INT_STEREO,
-    INT_TOF,
-    INT_IMU,
-    INT_VIO,
-    INT_PC
+class InterfaceManager;
+
+typedef struct ThreadData {
+
+    InterfaceManager* manager;
+    volatile bool     running;
+    ros::NodeHandle nh;
+    ros::NodeHandle nhp;
+
+} ThreadData;
+
+class InterfaceManager 
+{
+public:
+    InterfaceManager(ros::NodeHandle nh, ros::NodeHandle nhp);
+
+    void Start();
+    void Stop();
+
+private:
+
+    pthread_t          m_thread;
+    ThreadData         m_threadData;
+
 };
 
-#endif
+#endif 

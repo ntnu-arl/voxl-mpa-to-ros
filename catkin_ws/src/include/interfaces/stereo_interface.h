@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 ModalAI Inc.
+ * Copyright 2020 ModalAI Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,42 +31,50 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef MPA_INTERFACE_MANAGER
-#define MPA_INTERFACE_MANAGER
+#ifndef STEREO_MPA_INTERFACE
+#define STEREO_MPA_INTERFACE
+
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/Image.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/publisher.h>
 
 #include "generic_interface.h"
 
-class InterfaceManager;
-
-typedef struct ThreadData {
-
-    InterfaceManager* manager;
-    volatile bool     running;
-
-} ThreadData;
-
-class InterfaceManager 
+class StereoInterface: public GenericInterface
 {
 public:
-    InterfaceManager(GenericInterface** interfaces,
-                     int                numInterfaces);
+    StereoInterface(ros::NodeHandle rosNodeHandle,
+                    ros::NodeHandle rosNodeHandleParams,
+                    const char*     camName);
 
-    void Start();
-    void Stop();
-    int  GetNumInterfaces(){
-        return m_numInterfaces;
+    ~StereoInterface() { };
+
+    int  GetNumClients();
+    void AdvertiseTopics();
+    void StopAdvertising();
+
+    sensor_msgs::Image& GetImageMsgL(){
+        return m_imageMsgL;
     }
-    GenericInterface *GetInterface(int i){
-        return (i >=0 && i < m_numInterfaces) ? m_interfaces[i] : NULL;
+    sensor_msgs::Image& GetImageMsgR(){
+        return m_imageMsgR;
+    }
+
+    image_transport::Publisher& GetPublisherL(){
+        return m_rosImagePublisherL;
+    }
+    image_transport::Publisher& GetPublisherR(){
+        return m_rosImagePublisherR;
     }
 
 private:
 
-    pthread_t          m_thread;
-    ThreadData         m_threadData;
-    GenericInterface** m_interfaces;
-    int                m_numInterfaces;
+    sensor_msgs::Image                     m_imageMsgL;                   ///< Image message
+    image_transport::Publisher             m_rosImagePublisherL;          ///< Image publisher
+
+    sensor_msgs::Image                     m_imageMsgR;                   ///< Image message
+    image_transport::Publisher             m_rosImagePublisherR;          ///< Image publisher
 
 };
-
-#endif 
+#endif

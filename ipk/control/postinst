@@ -1,0 +1,11 @@
+#!/bin/sh
+
+################################################################################
+# Copyright (c) 2019 ModalAI, Inc. All rights reserved.
+#
+# author: james@modalai.com
+################################################################################
+
+echo ""
+echo "Done installing voxl-mpa-to-ros"
+echo ""

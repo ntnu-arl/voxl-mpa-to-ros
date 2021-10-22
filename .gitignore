@@ -1,0 +1,3 @@
+*.ipk
+.bash_history
+catkin_ws.tar

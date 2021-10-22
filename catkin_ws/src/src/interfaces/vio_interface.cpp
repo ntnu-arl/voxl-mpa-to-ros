@@ -42,15 +42,19 @@ static void _helper_cb(
 VIOInterface::VIOInterface(
     ros::NodeHandle rosNodeHandle,
     ros::NodeHandle rosNodeHandleParams,
-    int             baseChannel,
     const char *    name) :
-    GenericInterface(rosNodeHandle, rosNodeHandleParams, baseChannel, NUM_VIO_REQUIRED_CHANNELS, name)
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, name)
 {
 
     const char *frame_id = "map";
 
-    pipe_client_set_simple_helper_cb(m_baseChannel, _helper_cb, this);
 
+    pipe_client_set_simple_helper_cb(m_channel, _helper_cb, this);
+    if(pipe_client_open(m_channel, name, PIPE_CLIENT_NAME,
+                EN_PIPE_CLIENT_CAMERA_HELPER | CLIENT_FLAG_START_PAUSED, 0)){
+        pipe_client_close(m_channel);//Make sure we unclaim the channel
+        throw -1;
+    }
 
     m_poseMsg.header.frame_id = frame_id;
 
@@ -72,30 +76,8 @@ void VIOInterface::AdvertiseTopics(){
     m_state = ST_AD;
 
 }
-void VIOInterface::StartPublishing(){
 
-    char fullName[MODAL_PIPE_MAX_PATH_LEN];
-    pipe_expand_location_string(m_pipeName, fullName);
-
-    if(pipe_client_open(m_baseChannel, fullName, PIPE_CLIENT_NAME,
-                EN_PIPE_CLIENT_SIMPLE_HELPER, VIO_RECOMMENDED_READ_BUF_SIZE)){
-        printf("Error opening pipe: %s\n", m_pipeName);
-    } else {
-        pipe_client_set_disconnect_cb(m_baseChannel, _interface_dc_cb, this);
-        m_state = ST_RUNNING;
-    }
-
-}
-void VIOInterface::StopPublishing(){
-
-    if(m_state == ST_RUNNING){
-        pipe_client_close(m_baseChannel);
-        m_state = ST_AD;
-    }
-
-}
-
-void VIOInterface::Clean(){
+void VIOInterface::StopAdvertising(){
 
     m_posePublisher.shutdown();
     m_odomPublisher.shutdown();
