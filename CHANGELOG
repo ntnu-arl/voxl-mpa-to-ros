@@ -1,3 +1,5 @@
+0.0.9
+    * make sure to conflict/replace the older voxl-nodes to allow smooth upgrade
 0.0.8
     * now standalone project, no longer part of voxl-nodes
     * restructure to no longer use a complicated launch file, dynamically finds pipes
