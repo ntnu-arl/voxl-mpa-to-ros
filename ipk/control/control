@@ -1,12 +1,8 @@
-Package: voxl-mpa-to-ros
-Version: 0.0.9
+Package: voxl-nodes
+Version: 0.2.0
 Section: base
-Priority: required
+Priority: optional
 Architecture: armv7a
 Depends:libmodal_pipe(>=2.1.0), libmodal_json, voxl-mpa-tools(>=0.2.10)
-Breaks: voxl-nodes(<=0.1.7)
-Conflicts: voxl-nodes(<=0.1.7)
-Replaces: voxl-nodes(<=0.1.7)
-Provides: voxl-nodes
 Maintainer: Alex Gardner <alex.gardner@modalai.com>
 Description: ROSNode converting MPA pipes
