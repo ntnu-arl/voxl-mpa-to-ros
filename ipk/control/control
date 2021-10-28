@@ -1,7 +1,7 @@
 Package: voxl-mpa-to-ros
 Version: 0.0.9
 Section: base
-Priority: optional
+Priority: required
 Architecture: armv7a
 Depends:libmodal_pipe(>=2.1.0), libmodal_json, voxl-mpa-tools(>=0.2.10)
 Breaks: voxl-nodes(<=0.1.7)
