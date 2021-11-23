@@ -1,3 +1,5 @@
+0.2.1
+    * fix bug with vio interface trying to read via camera helper
 0.2.0
     * temporarily rename package to voxl-nodes since opkg still does not upgrade to the new name smoothly
 0.0.9
