@@ -51,7 +51,8 @@ VIOInterface::VIOInterface(
 
     pipe_client_set_simple_helper_cb(m_channel, _helper_cb, this);
     if(pipe_client_open(m_channel, name, PIPE_CLIENT_NAME,
-                EN_PIPE_CLIENT_CAMERA_HELPER | CLIENT_FLAG_START_PAUSED, 0)){
+                EN_PIPE_CLIENT_SIMPLE_HELPER | CLIENT_FLAG_START_PAUSED,
+                VIO_RECOMMENDED_READ_BUF_SIZE)){
         pipe_client_close(m_channel);//Make sure we unclaim the channel
         throw -1;
     }
