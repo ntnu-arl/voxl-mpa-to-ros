@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!--
 /*******************************************************************************
- * Copyright 2020 ModalAI Inc.
+ * Copyright 2021 ModalAI Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,31 +30,60 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
--->
-<package>
-  <name>voxl_mpa_to_ros</name>
-  <version>0.0.4</version>
-  <description>The MPA to Ros package</description>
-  <maintainer email="modalai@modalai.com">modalai</maintainer>
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
-  <build_depend>camera_info_manager</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>nodelet</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>message_generation</build_depend>
+#ifndef OBJECT_DETECT_MPA_INTERFACE
+#define OBJECT_DETECT_MPA_INTERFACE
 
-  <run_depend>message_runtime</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>camera_info_manager</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>image_transport</run_depend>
-  <run_depend>nodelet</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
+#include <ros/ros.h>
+#include <voxl_mpa_to_ros/ObjectDetection.h>
+#include "generic_interface.h"
 
-</package>
+
+typedef struct object_detection_msg {
+    int64_t timestamp_ns;
+    uint32_t class_id;
+    char class_name[64];
+    float class_confidence;
+    float detection_confidence;
+    float x_min;
+    float y_min;
+    float x_max;
+    float y_max;
+} __attribute__((packed)) object_detection_msg;
+
+typedef struct detections_array {
+    int32_t num_detections;
+    object_detection_msg detections[64];
+} __attribute__((packed)) detections_array;
+
+
+class ObjectDetectInterface: public GenericInterface
+{
+public:
+    ObjectDetectInterface(ros::NodeHandle  rosNodeHandle,
+                          ros::NodeHandle  rosNodeHandleParams,
+                          const char *     pipeName);
+
+    ~ObjectDetectInterface() { };
+
+
+    int  GetNumClients();
+    void AdvertiseTopics();
+    void StopAdvertising();
+
+    voxl_mpa_to_ros::ObjectDetection& GetObjMsg(){
+        return m_objMsg;
+    }
+
+    ros::Publisher& GetPublisher(){
+        return m_rosPublisher;
+    }
+
+private:
+
+    voxl_mpa_to_ros::ObjectDetection m_objMsg;
+    ros::Publisher                 m_rosPublisher;          ///< Obj publisher
+
+};
+
+#endif //OBJECT_DETECT_MPA_INTERFACE
