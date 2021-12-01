@@ -94,7 +94,6 @@ int ObjectDetectInterface::GetNumClients(){
 // called when the simple helper has data for us
 static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, void* context)
 {
-    if (bytes < (int)sizeof(detections_array)) return;
     detections_array data_array;
     memcpy ( &data_array, data, bytes );
 
@@ -113,7 +112,6 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
         obj.y_min = data_array.detections[i].y_min;
         obj.x_max = data_array.detections[i].x_max;
         obj.y_max = data_array.detections[i].y_max;
-
         publisher.publish(obj);
 
     }

@@ -40,6 +40,7 @@
 #include "imu_interface.h"
 #include "vio_interface.h"
 #include "point_cloud_interface.h"
+#include "object_detect_interface.h"
 
 enum InterfaceType {
     INT_NOT_SUPPORTED=-2,
@@ -48,7 +49,8 @@ enum InterfaceType {
     INT_STEREO,
     INT_IMU,
     INT_VIO,
-    INT_PC
+    INT_PC,
+    INT_DET
 };
 
 #endif
