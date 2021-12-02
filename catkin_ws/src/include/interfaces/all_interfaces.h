@@ -50,7 +50,7 @@ enum InterfaceType {
     INT_IMU,
     INT_VIO,
     INT_PC,
-    INT_DET
+    INT_AI
 };
 
 #endif

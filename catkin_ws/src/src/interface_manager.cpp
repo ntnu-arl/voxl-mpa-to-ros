@@ -145,9 +145,9 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 			} else if(!strncmp(buf, "point_cloud_metadata_t", strlen("point_cloud_metadata_t"))){
 				//printf("Processing Type: %s\n", buf);
 				curType = INT_PC;
-            } else if(!strncmp(buf, "detections", strlen("detections"))){
+            } else if(!strncmp(buf, "ai_detection_t", strlen("ai_detection_t"))){
 				//printf("Processing Type: %s\n", buf);
-				curType = INT_DET;
+				curType = INT_AI;
 			} else {
 				curType = INT_NOT_SUPPORTED;
 			}
@@ -209,7 +209,7 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 						newNode->interface = new PointCloudInterface(nh, nhp, newNode->name);
 						break;
 
-                    case INT_DET:
+                    case INT_AI:
 						newNode->interface = new ObjectDetectInterface(nh, nhp, newNode->name);
 						break;
 
