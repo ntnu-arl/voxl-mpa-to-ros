@@ -31,9 +31,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 #include <modal_pipe.h>
-#include "object_detect_interface.h"
+#include "ai_detection_interface.h"
 
-#define OBJ_BUF_LEN (sizeof(voxl_mpa_to_ros::ObjectDetection) * 250)
+// big buffer here, potentially lots of detections/frame
+#define OBJ_BUF_LEN (sizeof(ai_detection_t) * 500)
 
 static void _helper_cb(
     __attribute__((unused))int ch,
@@ -41,15 +42,17 @@ static void _helper_cb(
                            int bytes,
                            void* context);
 
-ObjectDetectInterface::ObjectDetectInterface(
+AiDetectionInterface::AiDetectionInterface(
     ros::NodeHandle rosNodeHandle,
     ros::NodeHandle rosNodeHandleParams,
     const char *    name) :
     GenericInterface(rosNodeHandle, rosNodeHandleParams, name)
 {
-
+    m_objMsg.timestamp_ns = 0;
     m_objMsg.class_id = 0;
+    m_objMsg.frame_id = 0;
     m_objMsg.class_name = "NULL";
+    m_objMsg.cam = "NULL";
     m_objMsg.class_confidence = 0;
     m_objMsg.detection_confidence = 0;
     m_objMsg.x_min = 0;
@@ -68,18 +71,18 @@ ObjectDetectInterface::ObjectDetectInterface(
 
 }
 
-void ObjectDetectInterface::AdvertiseTopics(){
+void AiDetectionInterface::AdvertiseTopics(){
 
     char topicName[64];
 
     sprintf(topicName, "%s", m_pipeName);
-    m_rosPublisher = m_rosNodeHandle.advertise<voxl_mpa_to_ros::ObjectDetection>(topicName, 1);
+    m_rosPublisher = m_rosNodeHandle.advertise<voxl_mpa_to_ros::AiDetection>(topicName, 1);
 
     m_state = ST_AD;
 
 }
 
-void ObjectDetectInterface::StopAdvertising(){
+void AiDetectionInterface::StopAdvertising(){
 
     m_rosPublisher.shutdown();
 
@@ -87,33 +90,36 @@ void ObjectDetectInterface::StopAdvertising(){
 
 }
 
-int ObjectDetectInterface::GetNumClients(){
+int AiDetectionInterface::GetNumClients(){
     return m_rosPublisher.getNumSubscribers();
 }
 
 // called when the simple helper has data for us
 static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, void* context)
 {
-    detections_array data_array;
-    memcpy ( &data_array, data, bytes );
+    ai_detection_t detection;
+    memcpy ( &detection, data, sizeof(ai_detection_t) );
 
-    ObjectDetectInterface *interface = (ObjectDetectInterface *) context;
+    if (detection.magic_number != AI_DETECTION_MAGIC_NUMBER) return;
+
+    AiDetectionInterface *interface = (AiDetectionInterface *) context;
     if(interface->GetState() != ST_RUNNING) return;
     ros::Publisher& publisher = interface->GetPublisher();
-    voxl_mpa_to_ros::ObjectDetection& obj = interface->GetObjMsg();
+    voxl_mpa_to_ros::AiDetection& obj = interface->GetObjMsg();
 
-    //publish all the samples
-    for(int i=0;i<data_array.num_detections;i++){
-        obj.class_id = data_array.detections[i].class_id;
-        obj.class_name = data_array.detections[i].class_name;
-        obj.class_confidence = data_array.detections[i].class_confidence;
-        obj.detection_confidence = data_array.detections[i].detection_confidence;
-        obj.x_min = data_array.detections[i].x_min;
-        obj.y_min = data_array.detections[i].y_min;
-        obj.x_max = data_array.detections[i].x_max;
-        obj.y_max = data_array.detections[i].y_max;
-        publisher.publish(obj);
+    //publish the sample
+    obj.timestamp_ns = detection.timestamp_ns;
+    obj.class_id = detection.class_id;
+    obj.frame_id = detection.frame_id;
+    obj.class_name = detection.class_name;
+    obj.cam = detection.cam;
+    obj.class_confidence = detection.class_confidence;
+    obj.detection_confidence = detection.detection_confidence;
+    obj.x_min = detection.x_min;
+    obj.y_min = detection.y_min;
+    obj.x_max = detection.x_max;
+    obj.y_max = detection.y_max;
+    publisher.publish(obj);
 
-    }
     return;
 }

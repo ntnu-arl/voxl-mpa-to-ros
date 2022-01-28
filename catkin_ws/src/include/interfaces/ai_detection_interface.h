@@ -31,47 +31,48 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef OBJECT_DETECT_MPA_INTERFACE
-#define OBJECT_DETECT_MPA_INTERFACE
+#ifndef AI_DETECTION_MPA_INTERFACE
+#define AI_DETECTION_MPA_INTERFACE
 
 #include <ros/ros.h>
-#include <voxl_mpa_to_ros/ObjectDetection.h>
+#include <voxl_mpa_to_ros/AiDetection.h>
 #include "generic_interface.h"
 
+#define BUF_LEN 64
+#define AI_DETECTION_MAGIC_NUMBER (0x564F584C)
 
-typedef struct object_detection_msg {
+// struct containing all relevant metadata to a tflite object detection
+typedef struct ai_detection_t {
+	uint32_t magic_number;
     int64_t timestamp_ns;
     uint32_t class_id;
-    char class_name[64];
+    int32_t  frame_id;
+    char class_name[BUF_LEN];
+    char cam[BUF_LEN];
     float class_confidence;
     float detection_confidence;
     float x_min;
     float y_min;
     float x_max;
     float y_max;
-} __attribute__((packed)) object_detection_msg;
-
-typedef struct detections_array {
-    int32_t num_detections;
-    object_detection_msg detections[64];
-} __attribute__((packed)) detections_array;
+} __attribute__((packed)) ai_detection_t;
 
 
-class ObjectDetectInterface: public GenericInterface
+class AiDetectionInterface: public GenericInterface
 {
 public:
-    ObjectDetectInterface(ros::NodeHandle  rosNodeHandle,
+    AiDetectionInterface(ros::NodeHandle  rosNodeHandle,
                           ros::NodeHandle  rosNodeHandleParams,
                           const char *     pipeName);
 
-    ~ObjectDetectInterface() { };
+    ~AiDetectionInterface() { };
 
 
     int  GetNumClients();
     void AdvertiseTopics();
     void StopAdvertising();
 
-    voxl_mpa_to_ros::ObjectDetection& GetObjMsg(){
+    voxl_mpa_to_ros::AiDetection& GetObjMsg(){
         return m_objMsg;
     }
 
@@ -81,9 +82,9 @@ public:
 
 private:
 
-    voxl_mpa_to_ros::ObjectDetection m_objMsg;
+    voxl_mpa_to_ros::AiDetection m_objMsg;
     ros::Publisher                 m_rosPublisher;          ///< Obj publisher
 
 };
 
-#endif //OBJECT_DETECT_MPA_INTERFACE
+#endif //AI_DETECTION_MPA_INTERFACE

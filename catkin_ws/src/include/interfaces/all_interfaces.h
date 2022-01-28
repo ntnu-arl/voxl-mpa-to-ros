@@ -40,7 +40,7 @@
 #include "imu_interface.h"
 #include "vio_interface.h"
 #include "point_cloud_interface.h"
-#include "object_detect_interface.h"
+#include "ai_detection_interface.h"
 
 enum InterfaceType {
     INT_NOT_SUPPORTED=-2,

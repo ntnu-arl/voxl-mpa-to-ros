@@ -3,21 +3,16 @@ before_script:
 
 include:
   - project: 'voxl-public/utilities/ci-tools'
-    file: '/pipeline-configs/.nightly-voxl-emulator.yml'
-  - project: 'voxl-public/utilities/ci-tools'
-    file: '/pipeline-configs/.build-voxl-emulator.yml'
-  - project: 'voxl-public/utilities/ci-tools'
-    file: '/pipeline-configs/.deploy-dev.yml'
-  - project: 'voxl-public/utilities/ci-tools'
-    file: '/pipeline-configs/.deploy-stable.yml'
+    file: '/pipeline-configs/voxl-emulator.yml'
 
 
 variables:
     GIT_SUBMODULE_STRATEGY: recursive
   
 stages:
-    - nightly_build_stage 
-    - build_stage
-    - deploy_stage_dev
-    - deploy_stage_stable
-
+    - build_voxl_emulator_dev
+    - nightly_voxl_emulator_dev
+    - deploy_voxl_emulator_dev
+    - build_voxl_emulator_stable
+    - nightly_voxl_emulator_stable
+    - deploy_voxl_emulator_stable

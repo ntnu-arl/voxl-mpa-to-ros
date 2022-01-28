@@ -210,7 +210,7 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 						break;
 
                     case INT_AI:
-						newNode->interface = new ObjectDetectInterface(nh, nhp, newNode->name);
+						newNode->interface = new AiDetectionInterface(nh, nhp, newNode->name);
 						break;
 
 					default: //Should never get here
