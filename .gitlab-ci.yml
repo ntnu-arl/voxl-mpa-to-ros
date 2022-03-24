@@ -10,9 +10,21 @@ variables:
     GIT_SUBMODULE_STRATEGY: recursive
   
 stages:
-    - build_voxl_emulator_dev
-    - nightly_voxl_emulator_dev
-    - deploy_voxl_emulator_dev
-    - build_voxl_emulator_stable
-    - nightly_voxl_emulator_stable
-    - deploy_voxl_emulator_stable
+
+  before_script:
+      - git clone -q --depth 1 https://gitlab.com/voxl-public/voxl-sdk/ci-tools
+
+  include:
+    - project: 'voxl-public/voxl-sdk/ci-tools'
+      file: '/pipeline-configs/apq8096-emulator.yml'
+
+  variables:
+      GIT_SUBMODULE_STRATEGY: recursive
+
+  stages:
+      - build_apq8096_emulator_dev
+      - nightly_apq8096_emulator_dev
+      - deploy_apq8096_emulator_dev
+      - build_apq8096_emulator_stable
+      - nightly_apq8096_emulator_stable
+      - deploy_apq8096_emulator_stable
