@@ -31,26 +31,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef ALL_MPA_INTERFACES
-#define ALL_MPA_INTERFACES
+#ifndef AI_DETECTION_MPA_INTERFACE
+#define AI_DETECTION_MPA_INTERFACE
 
+#include <ros/ros.h>
+#include <voxl_mpa_to_ros/AiDetection.h>
 #include "generic_interface.h"
-#include "camera_interface.h"
-#include "stereo_interface.h"
-#include "imu_interface.h"
-#include "vio_interface.h"
-#include "point_cloud_interface.h"
-#include "ai_detection_interface.h"
 
-enum InterfaceType {
-    INT_NOT_SUPPORTED=-2,
-    INT_NONE=-1,
-    INT_CAMERA,
-    INT_STEREO,
-    INT_IMU,
-    INT_VIO,
-    INT_PC,
-    INT_AI
+#define BUF_LEN 64
+#define AI_DETECTION_MAGIC_NUMBER (0x564F584C)
+
+// struct containing all relevant metadata to a tflite object detection
+typedef struct ai_detection_t {
+	uint32_t magic_number;
+    int64_t timestamp_ns;
+    uint32_t class_id;
+    int32_t  frame_id;
+    char class_name[BUF_LEN];
+    char cam[BUF_LEN];
+    float class_confidence;
+    float detection_confidence;
+    float x_min;
+    float y_min;
+    float x_max;
+    float y_max;
+} __attribute__((packed)) ai_detection_t;
+
+
+class AiDetectionInterface: public GenericInterface
+{
+public:
+    AiDetectionInterface(ros::NodeHandle  rosNodeHandle,
+                          ros::NodeHandle  rosNodeHandleParams,
+                          const char *     pipeName);
+
+    ~AiDetectionInterface() { };
+
+
+    int  GetNumClients();
+    void AdvertiseTopics();
+    void StopAdvertising();
+
+    voxl_mpa_to_ros::AiDetection& GetObjMsg(){
+        return m_objMsg;
+    }
+
+    ros::Publisher& GetPublisher(){
+        return m_rosPublisher;
+    }
+
+private:
+
+    voxl_mpa_to_ros::AiDetection m_objMsg;
+    ros::Publisher                 m_rosPublisher;          ///< Obj publisher
+
 };
 
-#endif
+#endif //AI_DETECTION_MPA_INTERFACE

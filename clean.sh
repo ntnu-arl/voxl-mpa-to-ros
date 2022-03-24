@@ -1,17 +1,22 @@
 #!/bin/bash
 #
-# cleans the ros workspace
-#
-# Modal AI Inc. 2019
+# Modal AI Inc. 2022
 # author: james@modalai.com
 
 
+sudo rm -rf build/
+sudo rm -rf build32/
+sudo rm -rf build64/
+sudo rm -rf pkg/control.tar.gz
+sudo rm -rf pkg/data/
+sudo rm -rf pkg/data.tar.gz
+sudo rm -rf pkg/DEB/
+sudo rm -rf pkg/IPK/
+sudo rm -rf *.ipk
+sudo rm -rf *.deb
+sudo rm -rf .bash_history
 
 rm -rf catkin_ws/build/
 rm -rf catkin_ws/install/
 rm -rf catkin_ws/devel/
 
-rm -rf ipk/control.tar.gz
-rm -rf ipk/data/
-rm -rf ipk/data.tar.gz
-rm -rf *.ipk

@@ -47,7 +47,7 @@ static bool pipeExists(const char *pipeName);
 // -----------------------------------------------------------------------------------------------------------------------------
 InterfaceManager::InterfaceManager(ros::NodeHandle nh, ros::NodeHandle nhp)
 {
-    
+
     m_threadData.manager = this;
     m_threadData.running = false;
     m_threadData.nh = nh;
@@ -145,9 +145,12 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 			} else if(!strncmp(buf, "point_cloud_metadata_t", strlen("point_cloud_metadata_t"))){
 				//printf("Processing Type: %s\n", buf);
 				curType = INT_PC;
+            } else if(!strncmp(buf, "ai_detection_t", strlen("ai_detection_t"))){
+				//printf("Processing Type: %s\n", buf);
+				curType = INT_AI;
 			} else {
 				curType = INT_NOT_SUPPORTED;
-			} 
+			}
 
 		} else if(curType == INT_NOT_SUPPORTED){//This pipe has a type that we don't publish to ros, ignore the available pipes
 
@@ -204,6 +207,10 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 
 					case INT_PC:
 						newNode->interface = new PointCloudInterface(nh, nhp, newNode->name);
+						break;
+
+                    case INT_AI:
+						newNode->interface = new AiDetectionInterface(nh, nhp, newNode->name);
 						break;
 
 					default: //Should never get here

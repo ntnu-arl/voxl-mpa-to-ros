@@ -1,8 +1,8 @@
 Package: voxl-nodes
-Version: 0.2.1
+Version: 0.2.2
 Section: base
 Priority: optional
 Architecture: armv7a
-Depends:libmodal_pipe(>=2.1.0), libmodal_json, voxl-mpa-tools(>=0.2.10)
+Depends:libmodal-pipe(>=2.1.0), libmodal-json, voxl-mpa-tools(>=0.2.10)
 Maintainer: Alex Gardner <alex.gardner@modalai.com>
 Description: ROSNode converting MPA pipes
