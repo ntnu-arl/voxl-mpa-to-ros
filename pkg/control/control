@@ -1,4 +1,4 @@
-Package: voxl-nodes
+Package: voxl-mpa-to-ros
 Version: 0.2.2
 Section: base
 Priority: optional
