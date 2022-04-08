@@ -68,10 +68,10 @@ void VIOInterface::AdvertiseTopics(){
 
     char frameName[64];
 
-    sprintf(frameName, "%s/pose", m_pipeName);
+    snprintf(frameName, 64, "%s/pose", m_pipeName);
     m_posePublisher = m_rosNodeHandle.advertise<geometry_msgs::PoseStamped>(frameName,1);
 
-    sprintf(frameName, "%s/odometry", m_pipeName);
+    snprintf(frameName, 64, "%s/odometry", m_pipeName);
     m_odomPublisher = m_rosNodeHandle.advertise<nav_msgs::Odometry>(frameName,1);
 
     m_state = ST_AD;

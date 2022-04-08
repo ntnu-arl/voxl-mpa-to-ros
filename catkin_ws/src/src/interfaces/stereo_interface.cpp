@@ -49,11 +49,11 @@ StereoInterface::StereoInterface(
 
     char frameName[64];
 
-    sprintf(frameName, "%s/left", m_pipeName);
+    snprintf(frameName, 64, "%s/left", m_pipeName);
     m_imageMsgL.header.frame_id = frameName;
     m_imageMsgL.is_bigendian    = false;
 
-    sprintf(frameName, "%s/right", m_pipeName);
+    snprintf(frameName, 64, "%s/right", m_pipeName);
     m_imageMsgR.header.frame_id = frameName;
     m_imageMsgR.is_bigendian    = false;
 
@@ -73,10 +73,10 @@ void StereoInterface::AdvertiseTopics(){
 
     char topicName[64];
 
-    sprintf(topicName, "%s/left", m_pipeName);
+    snprintf(topicName, 64, "%s/left", m_pipeName);
     m_rosImagePublisherL = it.advertise(topicName, 1);
 
-    sprintf(topicName, "%s/right", m_pipeName);
+    snprintf(topicName, 64, "%s/right", m_pipeName);
     m_rosImagePublisherR = it.advertise(topicName, 1);
 
     m_state = ST_AD;
