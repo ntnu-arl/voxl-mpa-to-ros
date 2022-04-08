@@ -113,17 +113,47 @@ rm -rf $DEB_DIR
 rm -f *.ipk
 rm -f *.deb
 
+################################################################################
+## install compiled stuff into data directory with 'make install'
+## try this for all 3 possible build folders, some packages are multi-arch
+## so both 32 and 64 need installing to pkg directory.
+################################################################################
+
+# make sure build succeeded
+if ! [[ -d "misc_files" ]]; then
+    echo "run build before make_package"
+    exit 1
+fi
 
 ################################################################################
-## copy useful files into data directory
+## install standard stuff common across ModalAI projects if they exist
 ################################################################################
 
-mkdir -p $DATA_DIR
+if [ -d "services" ]; then
+    sudo mkdir -p $DATA_DIR/etc/systemd/system/
+    sudo cp services/* $DATA_DIR/etc/systemd/system/
+fi
 
-# ros binaries go into normal /opt/ros/indigo place
-mkdir -p $DATA_DIR/opt/ros/indigo/
-cp -r catkin_ws/install/lib/  $DATA_DIR/opt/ros/indigo/
-cp -r catkin_ws/install/share/  $DATA_DIR/opt/ros/indigo/
+if [ -d "scripts" ]; then
+    sudo mkdir -p $DATA_DIR/usr/bin/
+    sudo chmod +x scripts/*
+    sudo cp scripts/* $DATA_DIR/usr/bin/
+fi
+
+if [ -d "bash_completions" ]; then
+    sudo mkdir -p $DATA_DIR/usr/share/bash-completion/completions
+    sudo cp bash_completions/* $DATA_DIR/usr/share/bash-completion/completions
+fi
+
+if [ -d "misc_files" ]; then
+    sudo cp -R misc_files/* $DATA_DIR/
+fi
+
+if [ -d "bash_profile" ]; then
+    sudo mkdir -p ${DATA_DIR}/home/root/.profile.d/
+    sudo cp -R bash_profile/* ${DATA_DIR}/home/root/.profile.d/
+fi
+
 
 ################################################################################
 # make an IPK

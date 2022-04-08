@@ -78,7 +78,7 @@ include_directories(
   ./include/utils
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -pthread -Wall -fpermissive")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -L /usr/lib64 -pthread -Wall -fpermissive -Wno-misleading-indentation -Wno-format-truncation")
 
 # Build lib from all source files
 file(GLOB_RECURSE all_src_files src/*.c*)
