@@ -71,50 +71,49 @@ if [ "$PLATFORM" == "apq8096" ]; then
     MODE="IPK"
 fi
 
-
 # install deb packages with apt
 if [ "$MODE" == "DEB" ]; then
     echo "using $PLATFORM $SECTION debian repo"
     # write in the new entry
     DPKG_FILE="/etc/apt/sources.list.d/modalai.list"
     LINE="deb [trusted=yes] http://voxl-packages.modalai.com/ ./dists/$PLATFORM/$SECTION/binary-arm64/"
-    sudo echo "${LINE}" > ${DPKG_FILE}
+    echo "${LINE}" > ${DPKG_FILE}
 
     ## make sure we have the latest package index
     ## only pull from voxl-packages to save time
-    sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/modalai.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+    apt-get update -o Dir::Etc::sourcelist="sources.list.d/modalai.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 
     ## install the user's list of dependencies
     echo "installing: $DEPS_QRB5165"
-    sudo apt install -y $DEPS_QRB5165
+    apt install -y $DEPS_QRB5165
 
 # install IPK packages with opkg
 else
     echo "using $PLATFORM $SECTION repo"
     OPKG_CONF="/etc/opkg/opkg.conf"
     # delete any existing repository entries
-    sudo sed -i '/voxl-packages.modalai.com/d' ${OPKG_CONF}
+    sed -i '/voxl-packages.modalai.com/d' ${OPKG_CONF}
 
     # add arm64 architecture if necessary
     if ! grep -q "arch arm64" "${OPKG_CONF}"; then
         echo "adding arm64 to opkg conf"
-        sudo echo "arch arm64 7" >> ${OPKG_CONF}
+        echo "arch arm64 7" >> ${OPKG_CONF}
     fi
 
     # write in the new entry
     LINE="src/gz ${SECTION} http://voxl-packages.modalai.com/dists/$PLATFORM/${SECTION}/binary-arm64/"
-    sudo echo "$LINE" >> ${OPKG_CONF}
-    sudo echo "" >> ${OPKG_CONF}
+    echo "$LINE" >> ${OPKG_CONF}
+    echo "" >> ${OPKG_CONF}
 
     ## make sure we have the latest package index
-    sudo opkg update
+    opkg update
 
     echo "installing: $DEPS_APQ8096"
 
     # install/update each dependency
     for i in ${DEPS_APQ8096}; do
         # this will also update if already installed!
-        sudo opkg install --nodeps $i
+        opkg install --nodeps $i
     done
 
 fi
