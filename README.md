@@ -24,6 +24,11 @@ or (VOXL2/RB5):
 apt install voxl-mpa-to-ros
 ```
 
+If you're running a version of the voxl sdk <= 0.5.0 this package was found under voxl-nodes and can be installed with:
+```
+opkg install voxl-nodes
+```
+
 ### Start Installed MPA ROS Node
 
 Run the following commands(on voxl):
