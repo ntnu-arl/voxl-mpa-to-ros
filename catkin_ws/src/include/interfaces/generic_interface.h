@@ -75,16 +75,16 @@ public:
     m_channel(pipe_client_get_next_available_channel())
     {
 
-    	if(m_channel == -1) throw -1;
+        if(m_channel == -1) throw -1;
         pipe_client_set_disconnect_cb(m_channel, _interface_dc_cb, this);
-    	//printf("%s on channel: %d\n", pipeName, m_channel);
+        //printf("%s on channel: %d\n", pipeName, m_channel);
         strcpy(m_pipeName, pipeName);
         m_state = ST_READY;
     }
 
     virtual ~GenericInterface(){
-    	printf("Closing %s on channel: %d\n", m_pipeName, m_channel);
-    	pipe_client_close(m_channel);
+        printf("Closing %s on channel: %d\n", m_pipeName, m_channel);
+        pipe_client_close(m_channel);
     };
 
 
@@ -97,48 +97,48 @@ public:
     virtual int GetNumClients()        = 0;
 
     /**
-     * The interface should use this function to inspect which of 
+     * The interface should use this function to inspect which of
      * its potential pipes are available and advertise them to ros
-     * 
+     *
      * state should be set to advertising at the end of a successful call
      */
     virtual void AdvertiseTopics()     = 0;
 
     /**
-     * The interface should use this function to subscribe to its pipes 
+     * The interface should use this function to subscribe to its pipes
      * and begin actually publishing data to ros
-     * 
+     *
      * This may be called multiple times during execution
-     * 
+     *
      * state should be set to running at the end of a successful call
-     * 
+     *
      * Simple version implemented here, can be overridden if necessary
-     * 
+     *
      */
     virtual void StartPublishing() {
 
-    	pipe_client_resume(m_channel);
-    	m_state = ST_RUNNING;
+        pipe_client_resume(m_channel);
+        m_state = ST_RUNNING;
 
     }
 
     /**
      * The interface should use this function to unsubscribe from its
      * pipes and cease publishing data to ros
-     * 
+     *
      * This may be called multiple times during execution
-     * 
+     *
      * state should be set to advertising at the end of a successful call
-     * 
+     *
      * Simple version implemented here, can be overridden if necessary
-     * 
+     *
      */
     virtual void StopPublishing() {
 
-	    pipe_client_pause(m_channel);
-	    m_state = ST_AD;
+        pipe_client_pause(m_channel);
+        m_state = ST_AD;
 
-	}
+    }
 
     /**
      * The interface should use this function to close all ros outputs
