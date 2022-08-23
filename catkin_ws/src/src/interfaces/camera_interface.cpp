@@ -92,8 +92,6 @@ static void _frame_cb(
 
     CameraInterface *interface = (CameraInterface *) context;
 
-    printf("%s frame: %d\n", interface->GetPipeName(), meta.frame_id);
-
     if(interface->GetState() != ST_RUNNING) return;
 
     image_transport::Publisher& publisher = interface->GetPublisher();

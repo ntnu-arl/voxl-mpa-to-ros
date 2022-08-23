@@ -1,3 +1,5 @@
+0.3.4
+    * remove egregiously verbose print statement in camera callback
 0.3.3
     * make sure to quit point cloud callback safely on error
 0.3.2
