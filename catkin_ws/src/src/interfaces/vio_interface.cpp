@@ -114,8 +114,8 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
         vio_data_t data = data_array[i];
 
-        poseMsg.header.stamp.fromNSec(data.timestamp_ns);
-        odomMsg.header.stamp.fromNSec(data.timestamp_ns);
+        poseMsg.header.stamp = (_clock_monotonic_to_ros_time(data.timestamp_ns));
+        odomMsg.header.stamp = (_clock_monotonic_to_ros_time(data.timestamp_ns));
 
         // extract quaternion from {imu w.r.t vio} rotation matrix
         tf2::Matrix3x3 R(

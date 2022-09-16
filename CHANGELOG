@@ -1,3 +1,5 @@
+0.3.5
+    * changed timestamps for all interfaces to UNIX timestamp
 0.3.4
     * remove egregiously verbose print statement in camera callback
 0.3.3

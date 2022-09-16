@@ -120,13 +120,13 @@ static void _frame_cb(
     image_transport::Publisher& publisherR = interface->GetPublisherR();
     sensor_msgs::Image& imgR = interface->GetImageMsgR();
 
-    imgL.header.stamp.fromNSec(meta.timestamp_ns);
+    imgL.header.stamp = (_clock_monotonic_to_ros_time(meta.timestamp_ns));
     imgL.width    = meta.width;
     imgL.height   = meta.height;
     imgL.step     = meta.width;
     imgL.encoding = GetRosFormat(meta.format);
 
-    imgR.header.stamp.fromNSec(meta.timestamp_ns);
+    imgR.header.stamp = (_clock_monotonic_to_ros_time(meta.timestamp_ns));
     imgR.width    = meta.width;
     imgR.height   = meta.height;
     imgR.step     = meta.width;
