@@ -126,7 +126,7 @@ static void _frame_cb(
     imgL.step     = meta.width;
     imgL.encoding = GetRosFormat(meta.format);
 
-    imgR.header.stamp = (_clock_monotonic_to_ros_time(meta.timestamp_ns));
+    imgR.header.stamp = imgL.header.stamp;
     imgR.width    = meta.width;
     imgR.height   = meta.height;
     imgR.step     = meta.width;
