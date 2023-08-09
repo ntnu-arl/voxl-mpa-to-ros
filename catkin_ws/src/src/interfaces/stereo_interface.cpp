@@ -108,7 +108,7 @@ static void _frame_cb(
 
     if(interface->GetState() != ST_RUNNING) return;
 
-    if(meta.format != IMAGE_FORMAT_STEREO_RAW8){
+    if(meta.format != IMAGE_FORMAT_STEREO_RAW8 && meta.format != IMAGE_FORMAT_RAW8){
         printf("Stereo interface received non-stereo frame, exiting stereo\n");
         interface->StopPublishing();
         interface->StopAdvertising();
@@ -137,8 +137,13 @@ static void _frame_cb(
     imgL.data.resize(dataSize);
     imgR.data.resize(dataSize);
 
-    memcpy(&(imgL.data[0]), frame, dataSize);
-    memcpy(&(imgR.data[0]), &frame[dataSize], dataSize);
+    if(meta.format == IMAGE_FORMAT_STEREO_RAW8){
+        memcpy(&(imgL.data[0]), frame, dataSize);
+        memcpy(&(imgR.data[0]), &frame[dataSize], dataSize);
+    } else {
+        memcpy(&(imgL.data[0]), frame, dataSize);
+        memcpy(&(imgR.data[0]), frame, dataSize);
+    }
 
     publisherL.publish(imgL);
     publisherR.publish(imgR);
