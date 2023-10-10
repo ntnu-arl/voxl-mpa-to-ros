@@ -102,11 +102,11 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
     ros::Publisher& publisher = interface->GetPublisher();
     voxl_mpa_to_ros::AiDetection& obj = interface->GetObjMsg();
 
-	int n_packets = bytes / sizeof(ai_detection_t);
-	ai_detection_t* detections = (ai_detection_t*) data;
+    int n_packets = bytes / sizeof(ai_detection_t);
+    ai_detection_t* detections = (ai_detection_t*) data;
 
-	for(int i=0;i<n_packets;i++){
-		if (detections[i].magic_number != AI_DETECTION_MAGIC_NUMBER) return;
+    for(int i=0;i<n_packets;i++){
+        if (detections[i].magic_number != AI_DETECTION_MAGIC_NUMBER) return;
 
         //publish the sample
         obj.timestamp_ns = detections[i].timestamp_ns;
