@@ -36,6 +36,7 @@
 
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/CompressedImage.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/publisher.h>
 
@@ -58,14 +59,24 @@ public:
         return m_imageMsg;
     }
 
+    sensor_msgs::CompressedImage& GetCompressedImageMsg(){
+        return m_compressedImage;
+    }
+
     image_transport::Publisher& GetPublisher(){
         return m_rosImagePublisher;
+    }
+
+    ros::Publisher& GetCompressedPublisher(){
+        return m_rosCompressedPublisher;
     }
 
 private:
 
     sensor_msgs::Image                     m_imageMsg;                   ///< Image message
+    sensor_msgs::CompressedImage           m_compressedImage;            ///< Compressed Image Message
     image_transport::Publisher             m_rosImagePublisher;          ///< Image publisher
-
+    ros::Publisher                         m_rosCompressedPublisher;     ///< Compressed image handler
+    std::string pipeName;
 };
 #endif

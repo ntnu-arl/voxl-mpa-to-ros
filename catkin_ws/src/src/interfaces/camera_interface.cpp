@@ -47,6 +47,7 @@ CameraInterface::CameraInterface(
     const char *    camName) :
     GenericInterface(rosNodeHandle, rosNodeHandleParams, camName)
 {
+    pipeName = m_pipeName;                                    ///< char* converted to string
 
     m_imageMsg.header.frame_id = camName;
     m_imageMsg.is_bigendian    = false;
@@ -65,21 +66,35 @@ void CameraInterface::AdvertiseTopics(){
 
     image_transport::ImageTransport it(m_rosNodeHandle);
 
-    m_rosImagePublisher = it.advertise(m_pipeName, 1);
+    // Check if "encoded" is present in the string
+    if (pipeName.find("encoded") != std::string::npos) {
+        m_rosCompressedPublisher = m_rosNodeHandle.advertise<sensor_msgs::CompressedImage>(m_pipeName, 1);
+    } else {
+        m_rosImagePublisher = it.advertise(m_pipeName, 1);
+    }
 
     m_state = ST_AD;
 
 }
 
 void CameraInterface::StopAdvertising(){
-
-    m_rosImagePublisher.shutdown();
+    
+    if (pipeName.find("encoded") != std::string::npos) {
+        m_rosCompressedPublisher.shutdown();
+    } else {
+        m_rosImagePublisher.shutdown();
+    }
     m_state = ST_CLEAN;
-
 }
 
 int CameraInterface::GetNumClients(){
-    return m_rosImagePublisher.getNumSubscribers();
+
+    if (pipeName.find("encoded") != std::string::npos) {
+        return m_rosCompressedPublisher.getNumSubscribers();
+    } else {
+        return m_rosImagePublisher.getNumSubscribers();
+    }
+    m_state = ST_CLEAN;
 }
 
 // helper callback whenever a frame arrives
@@ -95,7 +110,9 @@ static void _frame_cb(
     if(interface->GetState() != ST_RUNNING) return;
 
     image_transport::Publisher& publisher = interface->GetPublisher();
+    ros::Publisher& compressedPublisher = interface->GetCompressedPublisher();
     sensor_msgs::Image& img = interface->GetImageMsg();
+    sensor_msgs::CompressedImage& compressed_img = interface->GetCompressedImageMsg();
 
     img.header.stamp = (_clock_monotonic_to_ros_time( meta.timestamp_ns));
     img.width    = meta.width;
@@ -151,6 +168,24 @@ static void _frame_cb(
         }
 
         publisher.publish(img);
+
+    } else if (meta.format == IMAGE_FORMAT_H265 || meta.format == IMAGE_FORMAT_H264) {
+        // Set appropriate message fields for H.265
+        compressed_img.header.stamp = (_clock_monotonic_to_ros_time(meta.timestamp_ns));
+        
+        if(meta.format == IMAGE_FORMAT_H265){
+            compressed_img.format = "h265";  // Indicate H.265 format
+        } else {
+            compressed_img.format = "h264";  // Indicate H.265 format
+        }
+
+        compressed_img.data.resize(meta.size_bytes); // Resize the data vector to accommodate the frame data
+
+        // Copy frame data to the CompressedImage message
+        std::memcpy(compressed_img.data.data(), frame, meta.size_bytes);
+
+        // Publish the compressed H.265 me
+        compressedPublisher.publish(compressed_img);
 
     } else {
 

@@ -86,7 +86,9 @@ if [ "$MODE" == "DEB" ]; then
     ## install the user's list of dependencies
     echo "installing: $DEPS_QRB5165"
     apt install -y $DEPS_QRB5165
-
+    apt install -y ros-melodic-compressed-image-transport
+    apt install -y ros-melodic-image-transport-plugins
+    
 # install IPK packages with opkg
 else
     echo "using $PLATFORM $SECTION repo"
