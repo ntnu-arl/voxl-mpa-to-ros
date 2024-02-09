@@ -66,8 +66,7 @@ void CameraInterface::AdvertiseTopics(){
 
     image_transport::ImageTransport it(m_rosNodeHandle);
 
-    // Check if "encoded" is present in the string
-    if (pipeName.find("encoded") != std::string::npos) {
+    if (frame_format == IMAGE_FORMAT_H265 || frame_format == IMAGE_FORMAT_H264) {
         m_rosCompressedPublisher = m_rosNodeHandle.advertise<sensor_msgs::CompressedImage>(m_pipeName, 1);
     } else {
         m_rosImagePublisher = it.advertise(m_pipeName, 1);
@@ -79,7 +78,7 @@ void CameraInterface::AdvertiseTopics(){
 
 void CameraInterface::StopAdvertising(){
     
-    if (pipeName.find("encoded") != std::string::npos) {
+    if (frame_format == IMAGE_FORMAT_H265 || frame_format == IMAGE_FORMAT_H264) {
         m_rosCompressedPublisher.shutdown();
     } else {
         m_rosImagePublisher.shutdown();
@@ -89,7 +88,7 @@ void CameraInterface::StopAdvertising(){
 
 int CameraInterface::GetNumClients(){
 
-    if (pipeName.find("encoded") != std::string::npos) {
+    if (frame_format == IMAGE_FORMAT_H265 || frame_format == IMAGE_FORMAT_H264) {
         return m_rosCompressedPublisher.getNumSubscribers();
     } else {
         return m_rosImagePublisher.getNumSubscribers();
@@ -105,10 +104,12 @@ static void _frame_cb(
                             void* context)
 {
 
+
     CameraInterface *interface = (CameraInterface *) context;
 
     if(interface->GetState() != ST_RUNNING) return;
 
+    interface->frame_format = meta.format;
     image_transport::Publisher& publisher = interface->GetPublisher();
     ros::Publisher& compressedPublisher = interface->GetCompressedPublisher();
     sensor_msgs::Image& img = interface->GetImageMsg();
@@ -186,7 +187,33 @@ static void _frame_cb(
 
         // Publish the compressed H.265 me
         compressedPublisher.publish(compressed_img);
+    
+    } else if(meta.format == IMAGE_FORMAT_YUV422_UYVY) {
 
+        img.step = meta.width * GetStepSize(IMAGE_FORMAT_YUV422);
+        img.encoding = GetRosFormat(IMAGE_FORMAT_YUV422);
+
+        int dataSize = img.step * img.height;
+        img.data.resize(dataSize);
+
+        for (int i = 0; i < meta.height; ++i) 
+        {
+            for (int j = 0; j < meta.width; j += 2){
+
+                int uyvy_index = i * meta.width * 2 + j * 2;
+                int yuv_index = i * meta.width * 2 + j * 2;
+                
+                // Copy UYVY data to YUV422 format (YUYV)
+                img.data[yuv_index] = frame[uyvy_index + 1];     // Y1
+                img.data[yuv_index + 1] = frame[uyvy_index];     // U
+                img.data[yuv_index + 2] = frame[uyvy_index + 2]; // Y2
+                img.data[yuv_index + 3] = frame[uyvy_index + 3]; // V
+
+            }
+        }
+       
+        publisher.publish(img);
+        
     } else {
 
         img.step     = meta.width * GetStepSize(meta.format);

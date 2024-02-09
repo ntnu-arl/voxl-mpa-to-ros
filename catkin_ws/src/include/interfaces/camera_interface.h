@@ -71,6 +71,8 @@ public:
         return m_rosCompressedPublisher;
     }
 
+    int frame_format;
+
 private:
 
     sensor_msgs::Image                     m_imageMsg;                   ///< Image message
