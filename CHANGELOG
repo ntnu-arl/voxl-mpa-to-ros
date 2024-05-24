@@ -1,3 +1,5 @@
+0.3.8
+    * fix encoded video
 0.3.7
     * fix publishing stereo images
     * fix publishing AI detections from voxl-tflite-server
