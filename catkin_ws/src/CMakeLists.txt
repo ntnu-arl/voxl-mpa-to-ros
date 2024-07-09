@@ -52,6 +52,9 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   )
 
+find_path(YAML_CPP_INCLUDE_DIR yaml-cpp/yaml.h)
+find_library(YAML_CPP_LIBRARY yaml-cpp)
+
 add_message_files(
     FILES
     AiDetection.msg
@@ -73,6 +76,7 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIR}
   ./include
   ./include/interfaces
   ./include/utils
@@ -89,6 +93,7 @@ add_executable(${PROJECT_NAME}_node
 
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
+   ${YAML_CPP_LIBRARY}
    modal_pipe
    modal_json
 )

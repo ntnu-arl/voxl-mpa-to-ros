@@ -32,6 +32,10 @@
  ******************************************************************************/
 #include <modal_pipe.h>
 #include <string.h>
+#include <yaml-cpp/yaml.h>
+#include <iostream>
+#include <unistd.h>
+
 #include "camera_interface.h"
 #include "camera_helpers.h"
 
@@ -72,8 +76,40 @@ void CameraInterface::AdvertiseTopics(){
         m_rosImagePublisher = it.advertise(m_pipeName, 1);
     }
 
-    m_state = ST_AD;
+    std::string pipeName = std::string(m_pipeName);
+    std::string cameraInfoTopic = pipeName + "/camera_info";
+    m_rosCameraInfoPublisher = m_rosNodeHandle.advertise<sensor_msgs::CameraInfo>(cameraInfoTopic, 1);
 
+    // Parsing yaml
+    std::string cv_intrinsics_path = "/data/modalai/opencv_" + pipeName + "_intrinsics.yml";
+    if(access(cv_intrinsics_path.c_str(), F_OK) == 0){
+        YAML::Node config = YAML::LoadFile(cv_intrinsics_path);
+        
+        // Getting static values from yaml
+        m_cameraInfo.width = config["width"].as<uint32_t>();
+        m_cameraInfo.height = config["height"].as<uint32_t>();
+        m_cameraInfo.distortion_model = config["distortion_model"].as<std::string>();
+        
+        // Getting rotation info
+        m_cameraInfo.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+
+        // Getting distortion data
+        auto distortion_data = config["D"]["data"].as<std::vector<double>>();
+        m_cameraInfo.D.assign(distortion_data.begin(), distortion_data.end());
+
+        // Load intrinsic camera matrix
+        auto camera_matrix_data = config["M"]["data"].as<std::vector<double>>();
+        for (size_t i = 0; i < camera_matrix_data.size(); ++i) {
+            m_cameraInfo.K[i] = camera_matrix_data[i];
+        }
+
+        // Assuming zero for projection matrix P (3x4 zero matrix)
+        m_cameraInfo.P = {camera_matrix_data[0], camera_matrix_data[1], camera_matrix_data[2], 0.0,
+                    camera_matrix_data[3], camera_matrix_data[4], camera_matrix_data[5], 0.0,
+                    camera_matrix_data[6], camera_matrix_data[7], camera_matrix_data[8], 0.0};
+    }
+
+    m_state = ST_AD;
 }
 
 void CameraInterface::StopAdvertising(){
@@ -83,15 +119,18 @@ void CameraInterface::StopAdvertising(){
     } else {
         m_rosImagePublisher.shutdown();
     }
+
+    m_rosCameraInfoPublisher.shutdown();
+
     m_state = ST_CLEAN;
 }
 
 int CameraInterface::GetNumClients(){
 
     if (frame_format == IMAGE_FORMAT_H265 || frame_format == IMAGE_FORMAT_H264) {
-        return m_rosCompressedPublisher.getNumSubscribers();
+        return m_rosCompressedPublisher.getNumSubscribers() + m_rosCameraInfoPublisher.getNumSubscribers();
     } else {
-        return m_rosImagePublisher.getNumSubscribers();
+        return m_rosImagePublisher.getNumSubscribers() + m_rosCameraInfoPublisher.getNumSubscribers();
     }
     m_state = ST_CLEAN;
 }
@@ -114,10 +153,17 @@ static void _frame_cb(
     ros::Publisher& compressedPublisher = interface->GetCompressedPublisher();
     sensor_msgs::Image& img = interface->GetImageMsg();
     sensor_msgs::CompressedImage& compressed_img = interface->GetCompressedImageMsg();
+    sensor_msgs::CameraInfo& camera_info = interface->GetCameraInfo();
+    ros::Publisher& camera_info_publisher = interface->GetCameraInfoPublisher();
 
     img.header.stamp = (_clock_monotonic_to_ros_time( meta.timestamp_ns));
     img.width    = meta.width;
     img.height   = meta.height;
+
+    camera_info.header.stamp = (_clock_monotonic_to_ros_time( meta.timestamp_ns));
+    camera_info.header.frame_id = std::to_string(meta.frame_id);
+
+    camera_info_publisher.publish(camera_info);
 
     if(meta.format == IMAGE_FORMAT_NV21 || meta.format == IMAGE_FORMAT_NV12){
 
