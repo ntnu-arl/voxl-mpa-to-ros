@@ -88,7 +88,7 @@ void CameraInterface::AdvertiseTopics(){
         // Getting static values from yaml
         m_cameraInfo.width = config["width"].as<uint32_t>();
         m_cameraInfo.height = config["height"].as<uint32_t>();
-        m_cameraInfo.distortion_model = config["distortion_model"].as<std::string>();
+        m_cameraInfo.distortion_model = "equidistant";
         
         // Getting rotation info
         m_cameraInfo.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};

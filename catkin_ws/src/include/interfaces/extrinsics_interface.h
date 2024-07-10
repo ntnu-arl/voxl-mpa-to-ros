@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 ModalAI Inc.
+ * Copyright 2020 ModalAI Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,27 +31,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef ALL_MPA_INTERFACES
-#define ALL_MPA_INTERFACES
+#ifndef EXTRINSICS_MPA_INTERFACE
+#define EXTRINSICS_MPA_INTERFACE
+
+#include <ros/ros.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <jsoncpp/json/json.h>
+#include <fstream>
+#include <vector>
+#include <tf2/LinearMath/Quaternion.h>
 
 #include "generic_interface.h"
-#include "camera_interface.h"
-#include "stereo_interface.h"
-#include "extrinsics_interface.h"
-#include "imu_interface.h"
-#include "vio_interface.h"
-#include "point_cloud_interface.h"
-#include "ai_detection_interface.h"
 
-enum InterfaceType {
-    INT_NOT_SUPPORTED=-2,
-    INT_NONE=-1,
-    INT_CAMERA,
-    INT_STEREO,
-    INT_IMU,
-    INT_VIO,
-    INT_PC,
-    INT_AI
+
+class ExtrinsicsInterface: public GenericInterface
+{
+public:
+    ExtrinsicsInterface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
+                 const char*     name);
+
+    ~ExtrinsicsInterface() { };
+
+    int  GetNumClients();
+    void AdvertiseTopics();
+    void StopAdvertising();
+    void PublishExtrinsics(const ros::TimerEvent& event);
+    void ReadConfig();
+
+private:
+
+    ros::Publisher                 m_rosPublisher;          ///< Imu publisher
+    ros::Timer m_timer;                                     ///< Ros timer
+    geometry_msgs::TransformStamped static_transformStamped;///< stamped transform
+    std::vector<geometry_msgs::TransformStamped> transforms_;
+    tf2_ros::TransformBroadcaster br_;
 };
-
 #endif

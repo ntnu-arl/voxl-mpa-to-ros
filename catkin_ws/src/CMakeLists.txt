@@ -54,6 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_path(YAML_CPP_INCLUDE_DIR yaml-cpp/yaml.h)
 find_library(YAML_CPP_LIBRARY yaml-cpp)
+find_package(jsoncpp REQUIRED)
 
 add_message_files(
     FILES
@@ -77,6 +78,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIR}
+  ${jsoncpp_INCLUDE_DIRS}
   ./include
   ./include/interfaces
   ./include/utils
@@ -96,6 +98,7 @@ target_link_libraries(${PROJECT_NAME}_node
    ${YAML_CPP_LIBRARY}
    modal_pipe
    modal_json
+   jsoncpp_lib
 )
 
 

@@ -49,7 +49,7 @@ PointCloudInterface::PointCloudInterface(
 {
 
     //TODO Different frames
-    m_pcMsg.header.frame_id = "world";
+    m_pcMsg.header.frame_id = "tof";
 
     m_pcMsg.is_bigendian = false;
     // Data is not "dense" since not all points are valid.

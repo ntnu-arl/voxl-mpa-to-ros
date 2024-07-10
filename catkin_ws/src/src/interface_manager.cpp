@@ -115,6 +115,20 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 
 	InterfaceType curType = INT_NONE;
 	char buf[64];
+
+	// Start extrinsics publishing
+	const char* name_ext = "tf";
+	if(!listContainsPipe(head, name_ext)){//This interface is already open
+		InterfaceListNode *newNode = (InterfaceListNode *)malloc(sizeof(InterfaceListNode));
+		strcpy(newNode->name, name_ext);
+		newNode->next = NULL;
+		newNode->interface = new ExtrinsicsInterface(nh, nhp, newNode->name);
+		tail->next = newNode;
+		tail = newNode;
+		newNode->interface->AdvertiseTopics();
+		printf("Found new interface: %s\n", name_ext);
+	}
+
 	while(fgets(buf, 64, fp) != NULL){
 		//printf("%s", buf);
 
@@ -257,7 +271,7 @@ static void* ThreadManageInterfaces(void *pData){
 
             GenericInterface *interface = i->interface;
 
-            if(interface->GetState() == ST_READY && pipeExists(interface->GetPipeName())){
+            if((interface->GetState() == ST_READY && pipeExists(interface->GetPipeName()))){
                 interface->AdvertiseTopics();
                 printf("Found pipe for interface: %s, now advertising\n", interface->GetPipeName());
             }
@@ -270,7 +284,7 @@ static void* ThreadManageInterfaces(void *pData){
                 continue;
             }
 
-            if(interface->GetState() == ST_AD && !pipeExists(interface->GetPipeName())){
+            if((interface->GetState() == ST_AD && !pipeExists(interface->GetPipeName())) && std::string(interface->GetPipeName()) != "extrinsics"){
                 interface->StopAdvertising();
                 interface->SetState(ST_READY);
                 printf("Interface: %s's data pipe disconnected, closing until it returns\n", interface->GetPipeName());

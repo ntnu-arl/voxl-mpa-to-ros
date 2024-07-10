@@ -46,7 +46,7 @@ IMUInterface::IMUInterface(
     GenericInterface(rosNodeHandle, rosNodeHandleParams, name)
 {
 
-    m_imuMsg.header.frame_id = "map";
+    m_imuMsg.header.frame_id = "imu_apps";
     m_imuMsg.orientation.x = 0;
     m_imuMsg.orientation.y = 0;
     m_imuMsg.orientation.z = 0;

@@ -1,0 +1,101 @@
+/*******************************************************************************
+ * Copyright 2021 ModalAI Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * 4. The Software is used solely in conjunction with devices provided by
+ *    ModalAI Inc.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ ******************************************************************************/
+#include <modal_pipe.h>
+#include "extrinsics_interface.h"
+
+ExtrinsicsInterface::ExtrinsicsInterface(
+    ros::NodeHandle rosNodeHandle,
+    ros::NodeHandle rosNodeHandleParams,
+    const char *    name) :
+    GenericInterface(rosNodeHandle, rosNodeHandleParams, name)
+{
+    ReadConfig();
+    m_timer = rosNodeHandle.createTimer(ros::Duration(0.1), &ExtrinsicsInterface::PublishExtrinsics, this);
+}
+
+void ExtrinsicsInterface::ReadConfig(){
+    std::ifstream config_doc("/etc/modalai/extrinsics.conf", std::ifstream::binary);
+    if (!config_doc.is_open()) {
+        ROS_ERROR("Unable to open configuration file");
+        return;
+    }
+
+    Json::Value root;
+    config_doc >> root;
+
+    const Json::Value extrinsics = root["extrinsics"];
+    for (const auto& extrinsic : extrinsics) {
+        geometry_msgs::TransformStamped transform;
+
+        transform.header.frame_id = extrinsic["parent"].asString();
+        transform.child_frame_id = extrinsic["child"].asString();
+        
+        Json::Value T = extrinsic["T_child_wrt_parent"];
+        transform.transform.translation.x = T[0].asFloat();
+        transform.transform.translation.y = T[1].asFloat();
+        transform.transform.translation.z = T[2].asFloat();
+
+        Json::Value RPY = extrinsic["RPY_parent_to_child"];
+        double roll = RPY[0].asFloat();
+        double pitch = RPY[1].asFloat();
+        double yaw = RPY[2].asFloat();
+
+        tf2::Quaternion q;
+        q.setRPY(roll * M_PI / 180.0, pitch * M_PI / 180.0, yaw * M_PI / 180.0);
+        transform.transform.rotation.x = q.x();
+        transform.transform.rotation.y = q.y();
+        transform.transform.rotation.z = q.z();
+        transform.transform.rotation.w = q.w();
+
+        transforms_.push_back(transform);
+    }
+}
+
+void ExtrinsicsInterface::AdvertiseTopics(){
+    return;
+}
+
+void ExtrinsicsInterface::StopAdvertising(){
+    return;
+}
+
+int ExtrinsicsInterface::GetNumClients(){
+    return 0;
+}
+
+void ExtrinsicsInterface::PublishExtrinsics(const ros::TimerEvent& event) {
+    for (auto& transform : transforms_) {
+        transform.header.stamp = ros::Time::now();
+        br_.sendTransform(transform);
+    }
+}
