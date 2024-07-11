@@ -36,7 +36,7 @@
 
 #include <ros/ros.h>
 #include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <jsoncpp/json/json.h>
 #include <fstream>
@@ -58,15 +58,12 @@ public:
     int  GetNumClients();
     void AdvertiseTopics();
     void StopAdvertising();
-    void PublishExtrinsics(const ros::TimerEvent& event);
-    void ReadConfig();
+    void ReadandPublishConfig();
 
 private:
 
-    ros::Publisher                 m_rosPublisher;          ///< Imu publisher
     ros::Timer m_timer;                                     ///< Ros timer
-    geometry_msgs::TransformStamped static_transformStamped;///< stamped transform
     std::vector<geometry_msgs::TransformStamped> transforms_;
-    tf2_ros::TransformBroadcaster br_;
+    tf2_ros::StaticTransformBroadcaster br_;
 };
 #endif

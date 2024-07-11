@@ -117,7 +117,7 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 	char buf[64];
 
 	// Start extrinsics publishing
-	const char* name_ext = "tf";
+	const char* name_ext = "tf_static";
 	if(!listContainsPipe(head, name_ext)){//This interface is already open
 		InterfaceListNode *newNode = (InterfaceListNode *)malloc(sizeof(InterfaceListNode));
 		strcpy(newNode->name, name_ext);

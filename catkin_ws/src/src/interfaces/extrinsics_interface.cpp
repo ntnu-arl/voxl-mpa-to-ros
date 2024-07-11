@@ -39,11 +39,10 @@ ExtrinsicsInterface::ExtrinsicsInterface(
     const char *    name) :
     GenericInterface(rosNodeHandle, rosNodeHandleParams, name)
 {
-    ReadConfig();
-    m_timer = rosNodeHandle.createTimer(ros::Duration(0.1), &ExtrinsicsInterface::PublishExtrinsics, this);
+    ReadandPublishConfig();
 }
 
-void ExtrinsicsInterface::ReadConfig(){
+void ExtrinsicsInterface::ReadandPublishConfig(){
     std::ifstream config_doc("/etc/modalai/extrinsics.conf", std::ifstream::binary);
     if (!config_doc.is_open()) {
         ROS_ERROR("Unable to open configuration file");
@@ -78,6 +77,9 @@ void ExtrinsicsInterface::ReadConfig(){
         transform.transform.rotation.w = q.w();
 
         transforms_.push_back(transform);
+
+        transform.header.stamp = ros::Time::now();
+        br_.sendTransform(transform);
     }
 }
 
@@ -91,11 +93,4 @@ void ExtrinsicsInterface::StopAdvertising(){
 
 int ExtrinsicsInterface::GetNumClients(){
     return 0;
-}
-
-void ExtrinsicsInterface::PublishExtrinsics(const ros::TimerEvent& event) {
-    for (auto& transform : transforms_) {
-        transform.header.stamp = ros::Time::now();
-        br_.sendTransform(transform);
-    }
 }

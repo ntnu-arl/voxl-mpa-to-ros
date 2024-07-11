@@ -161,7 +161,7 @@ static void _frame_cb(
     img.height   = meta.height;
 
     camera_info.header.stamp = (_clock_monotonic_to_ros_time( meta.timestamp_ns));
-    camera_info.header.frame_id = std::to_string(meta.frame_id);
+    camera_info.header.frame_id = img.header.frame_id;
 
     camera_info_publisher.publish(camera_info);
 
