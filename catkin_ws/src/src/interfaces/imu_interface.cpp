@@ -112,11 +112,11 @@ static void _helper_cb(__attribute__((unused))int ch, char* data, int bytes, voi
 
         imu.header.stamp = (_clock_monotonic_to_ros_time(data_array[i].timestamp_ns));
         imu.angular_velocity.x = data_array[i].gyro_rad[0];
-        imu.angular_velocity.y = data_array[i].gyro_rad[1];
-        imu.angular_velocity.z = data_array[i].gyro_rad[2];
+        imu.angular_velocity.y = -data_array[i].gyro_rad[1];
+        imu.angular_velocity.z = -data_array[i].gyro_rad[2];
         imu.linear_acceleration.x = data_array[i].accl_ms2[0];
-        imu.linear_acceleration.y = data_array[i].accl_ms2[1];
-        imu.linear_acceleration.z = data_array[i].accl_ms2[2];
+        imu.linear_acceleration.y = -data_array[i].accl_ms2[1];
+        imu.linear_acceleration.z = -data_array[i].accl_ms2[2];
 
         publisher.publish(imu);
 
