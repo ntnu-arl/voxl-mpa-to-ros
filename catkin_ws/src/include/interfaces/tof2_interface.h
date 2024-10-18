@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2021 ModalAI Inc.
+ * Copyright 2020 ModalAI Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,28 +31,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef ALL_MPA_INTERFACES
-#define ALL_MPA_INTERFACES
+#ifndef TOF2_MPA_INTERFACE
+#define TOF2_MPA_INTERFACE
+
+#include <sensor_msgs/PointCloud2.h>
 
 #include "generic_interface.h"
-#include "camera_interface.h"
-#include "stereo_interface.h"
-#include "imu_interface.h"
-#include "vio_interface.h"
-#include "point_cloud_interface.h"
-#include "ai_detection_interface.h"
-#include "tof2_interface.h"
 
-enum InterfaceType {
-    INT_NOT_SUPPORTED=-2,
-    INT_NONE=-1,
-    INT_CAMERA,
-    INT_STEREO,
-    INT_IMU,
-    INT_VIO,
-    INT_PC,
-    INT_AI,
-    INT_TOF2
+class TOF2Interface: public GenericInterface
+{
+public:
+    TOF2Interface(ros::NodeHandle rosNodeHandle,
+                 ros::NodeHandle rosNodeHandleParams,
+                 const char*     name);
+
+    ~TOF2Interface() { };
+
+    int  GetNumClients();
+    void AdvertiseTopics();
+    void StopAdvertising();
+
+    sensor_msgs::PointCloud2& GetPCMsg(){
+        return m_pcMsg;
+    }
+    ros::Publisher& GetPCPublisher(){
+        return m_pcPublisher;
+    }
+
+private:
+
+    sensor_msgs::PointCloud2               m_pcMsg;                        ///< Point cloud message
+    ros::Publisher                         m_pcPublisher;                  ///< Point cloud publisher
+
+
+
 };
-
 #endif
