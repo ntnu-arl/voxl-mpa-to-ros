@@ -107,22 +107,30 @@ static void _helper_cb (__attribute__((unused))int ch, char* data, int bytes, vo
 
     // The total size of the channels of the point cloud for a single point are:
     // sizeof(float) * 4 = x, y, z, intensity
-    pcMsg.point_step = (sizeof(float) * 4);
+    pcMsg.point_step = (sizeof(float) * 3 + sizeof(uint8_t) * 2);
 
     // Describe the fields (channels) associated with each point.
-    pcMsg.fields.resize(4);
+    pcMsg.fields.resize(5);
     pcMsg.fields[0].name = "x";
     pcMsg.fields[1].name = "y";
     pcMsg.fields[2].name = "z";
     pcMsg.fields[3].name = "intensity";
+    pcMsg.fields[4].name = "confidence";
 
     // Defines the format of channels.
     int index;
 
-    for (index = 0; index < 4; index++)
+    for (index = 0; index < 3; index++)
     {
       pcMsg.fields[index].offset = sizeof(float) * index;
       pcMsg.fields[index].datatype = sensor_msgs::PointField::FLOAT32;
+      pcMsg.fields[index].count = 1;
+    }
+
+    for (index = 3; index < 5; index++)
+    {
+      pcMsg.fields[index].offset = sizeof(float) * 3 + sizeof(uint8_t) * (index - 3);
+      pcMsg.fields[index].datatype = sensor_msgs::PointField::UINT8;
       pcMsg.fields[index].count = 1;
     }
 
@@ -141,7 +149,8 @@ static void _helper_cb (__attribute__((unused))int ch, char* data, int bytes, vo
         *((float *)&(pcMsg.data[(j * pcMsg.point_step) + pcMsg.fields[0].offset])) = data_array[i].points[j][0];
         *((float *)&(pcMsg.data[(j * pcMsg.point_step) + pcMsg.fields[1].offset])) = data_array[i].points[j][1];
         *((float *)&(pcMsg.data[(j * pcMsg.point_step) + pcMsg.fields[2].offset])) = data_array[i].points[j][2];
-        *((float *)&(pcMsg.data[(j * pcMsg.point_step) + pcMsg.fields[3].offset])) = data_array[i].grayValues[j];
+        *((uint8_t *)&(pcMsg.data[(j * pcMsg.point_step) + pcMsg.fields[3].offset])) = data_array[i].grayValues[j];
+        *((uint8_t *)&(pcMsg.data[(j * pcMsg.point_step) + pcMsg.fields[4].offset])) = data_array[i].confidences[j];
       }
 
       pcPublisher.publish(pcMsg);
