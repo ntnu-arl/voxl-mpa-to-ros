@@ -139,6 +139,9 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 			} else if(!strncmp(buf, "imu_data_t", strlen("imu_data_t"))){
 				//printf("Processing Type: %s\n", buf);
 				curType = INT_IMU;
+			} else if(!strncmp(buf, "tof2_data_t", strlen("tof2_data_t"))){
+				// printf("Processing Type: %s\n", buf);
+				curType = INT_TOF2;
 			} else if(!strncmp(buf, "vio_data_t", strlen("vio_data_t"))){
 				//printf("Processing Type: %s\n", buf);
 				curType = INT_VIO;
@@ -199,6 +202,10 @@ static int findPipes(InterfaceListNode *head, ros::NodeHandle nh, ros::NodeHandl
 
 					case INT_IMU:
 						newNode->interface = new IMUInterface(nh, nhp, newNode->name);
+						break;
+
+					case INT_TOF2:
+						newNode->interface = new TOF2Interface(nh, nhp, newNode->name);
 						break;
 
 					case INT_VIO:
